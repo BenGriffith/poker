@@ -6,3 +6,6 @@ class Card:
 
     def value(self):
         pass
+
+    def __str__(self) -> str:
+        return f"{self.suit}, {self.rank}"
