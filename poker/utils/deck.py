@@ -1,8 +1,8 @@
 from typing import List
 from random import shuffle
 
-from utils.card import Card
-from utils.setup import SUITS, FACE_CARDS, NUMBER_CARDS
+from poker.utils.card import Card
+from poker.utils.setup import SUITS, FACE_CARDS, NUMBER_CARDS
 
 
 class Deck:
