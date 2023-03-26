@@ -2,7 +2,7 @@ import pytest
 
 from poker.utils.card import Card
 from poker.utils.deck import Deck
-from poker.utils.setup import SUITS, FACE_CARDS, NUMBER_CARDS
+from poker.utils.constants import SUITS, FACE_CARDS, NUMBER_CARDS
 
 
 @pytest.fixture
