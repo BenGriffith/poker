@@ -1,4 +1,4 @@
-from utils.deck import Deck
+from poker.utils.deck import Deck
 
 if __name__ == "__main__":
     deck = Deck()
