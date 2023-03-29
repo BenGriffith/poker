@@ -4,7 +4,7 @@ from poker.utils.constants import INCREMENT_LIMIT, SINGLE_CHIP, DOUBLE, Chip, Ca
 from poker.utils.exception import IncrementException, CashException
 
 
-class Stack:
+class PlayerStack:
 
     def __init__(self) -> None:
         self.chips = defaultdict(int)
@@ -52,3 +52,12 @@ class Stack:
         RED = self.chips[Chip.RED.name] * Chip.RED.value
         BLUE = self.chips[Chip.BLUE.name] * Chip.BLUE.value
         return WHITE + RED + BLUE
+    
+
+class GameStack(PlayerStack):
+
+    def __init__(self) -> None:
+        PlayerStack.__init__(self)
+
+    def increment(self, chip: str, quantity: int) -> None:
+        self.chips[chip] += quantity        
