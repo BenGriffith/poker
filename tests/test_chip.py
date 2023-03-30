@@ -4,7 +4,6 @@ from poker.utils.exception import IncrementException, CashException
 
 
 def test_increment_exception(player_stack):
-    #stack.increment(25)
     with pytest.raises(IncrementException):
         player_stack.increment(25)
 
@@ -50,23 +49,16 @@ def test_stack_decrement(player_stack, chip, cash):
     assert player_stack.chips[chip.BLUE.name] == 0
 
 
-def test_chip_count(player_stack, cash):
-    player_stack.increment(cash.FIVE.value)
-    player_stack.increment(cash.FIVE.value)
-    player_stack.increment(cash.TWENTY.value)
+def test_chip_count(twenty_chips, player_stack):
+    twenty_chips
     assert player_stack.chip_count() == (10, 2, 1) # WHITE: 10, RED: 2, BLUE: 1
 
 
-def test_cash_equivalent(player_stack, chip, cash):
-    player_stack.increment(cash.TEN.value)
-    player_stack.increment(cash.FIFTEEN.value)
-    player_stack.increment(cash.TWENTY.value)
-    player_stack.increment(cash.FIVE.value)
-
+def test_cash_equivalent(fifty_chips, player_stack, chip):
+    fifty_chips
     assert player_stack.chips[chip.WHITE.name] == 10
     assert player_stack.chips[chip.RED.name] == 4
     assert player_stack.chips[chip.BLUE.name] == 2
-
     assert player_stack.cash_equivalent() == 50
 
 

@@ -20,3 +20,8 @@ class Cash(Enum):
     TEN = 10
     FIFTEEN = 15
     TWENTY = 20
+
+
+class Blind(Enum):
+    SMALL = 1
+    BIG = 2

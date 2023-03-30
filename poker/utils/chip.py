@@ -1,4 +1,4 @@
-from collections import defaultdict
+from collections import Counter
 
 from poker.utils.constants import INCREMENT_LIMIT, SINGLE_CHIP, DOUBLE, Chip, Cash
 from poker.utils.exception import IncrementException, CashException
@@ -7,9 +7,8 @@ from poker.utils.exception import IncrementException, CashException
 class PlayerStack:
 
     def __init__(self) -> None:
-        self.chips = defaultdict(int)
+        self.chips = Counter()
     
-    # increment chips
     def increment(self, cash: int) -> None:
         if cash > INCREMENT_LIMIT:
             raise IncrementException()
@@ -30,15 +29,12 @@ class PlayerStack:
             self.chips[Chip.RED.name] += SINGLE_CHIP * DOUBLE
             self.chips[Chip.BLUE.name] += SINGLE_CHIP
     
-    # decrement chips
     def decrement(self, chip: str, value: int) -> None:
         self.chips[chip] -= value
 
-    # redeem
     def redeem(self):
         pass
 
-    # count
     def chip_count(self) -> tuple:
         return (
             self.chips[Chip.WHITE.name],
@@ -46,12 +42,12 @@ class PlayerStack:
             self.chips[Chip.BLUE.name],
             )
 
-    # cash
+
     def cash_equivalent(self):
-        WHITE = self.chips[Chip.WHITE.name] * Chip.WHITE.value
-        RED = self.chips[Chip.RED.name] * Chip.RED.value
-        BLUE = self.chips[Chip.BLUE.name] * Chip.BLUE.value
-        return WHITE + RED + BLUE
+        white = self.chips[Chip.WHITE.name] * Chip.WHITE.value
+        red = self.chips[Chip.RED.name] * Chip.RED.value
+        blue = self.chips[Chip.BLUE.name] * Chip.BLUE.value
+        return white + red + blue
     
 
 class GameStack(PlayerStack):
