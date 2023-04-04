@@ -1,4 +1,7 @@
+from random import shuffle
+
 from poker.utils.chip import PlayerStack
+from poker.utils.deck import Deck
 
 
 class Player:
@@ -22,4 +25,11 @@ class Computer(Player):
 class Dealer(Player):
 
     def __init__(self) -> None:
-        self.hand = []        
+        self.deck = Deck()
+
+    def shuffle_deck(self) -> None:
+        shuffle(self.deck.cards)
+
+    def deal_card(self, player: Player) -> None:
+        card = self.deck.cards.pop()
+        player.hand.append(card)
