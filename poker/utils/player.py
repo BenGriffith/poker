@@ -1,15 +1,16 @@
 from random import shuffle
 
 from poker.utils.chip import PlayerStack
-from poker.utils.deck import Deck
+from poker.utils.deck import Deck, Card
 
 
 class Player:
 
-    def __init__(self, cash: int) -> None:
+    def __init__(self, name: str, cash: int) -> None:
+        self.name = name
         self.cash = cash
-        self.hand = []
-        self.chips = PlayerStack
+        self.hand: list[Card] = []
+        self.chips = PlayerStack()
 
     def buy_chips(self, value: int) -> None:
         self.chips.increment(value)
@@ -18,18 +19,19 @@ class Player:
 
 class Computer(Player):
 
-    def __init__(self) -> None:
-        Player.__init__(self)
+    def __init__(self, name, cash) -> None:
+        Player.__init__(self, name, cash)
 
 
 class Dealer(Player):
 
     def __init__(self) -> None:
         self.deck = Deck()
+        self.hand: list[Card] = []
 
     def shuffle_deck(self) -> None:
         shuffle(self.deck.cards)
 
-    def deal_card(self, player: Player) -> None:
+    def deal_card(self, person: any) -> None:
         card = self.deck.cards.pop()
-        player.hand.append(card)
+        person.hand.append(card)

@@ -25,3 +25,10 @@ class Cash(Enum):
 class Blind(Enum):
     SMALL = 1
     BIG = 2
+
+
+class Decision(Enum):
+    YES = "yes"
+    NO = "no"
+    Y = "y"
+    N = "n"

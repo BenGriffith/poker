@@ -13,3 +13,10 @@ class CashException(BaseException):
     def __init__(self):
         self.message = f"invalid value. Acceptable values are {', '.join([f'${str(item.value)}' for item in Cash])}"
         super().__init__(self.message)
+
+
+class GamePlayException(BaseException):
+
+    def __init__(self):
+        self.message = f"Please enter 'Yes' or 'No'"
+        super().__init__(self.message)
