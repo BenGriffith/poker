@@ -6,7 +6,7 @@ from poker.utils.deck import Deck, Card
 
 class Player:
 
-    def __init__(self, name: str, cash: int) -> None:
+    def __init__(self, name: str, cash: int = 0) -> None:
         self.name = name
         self.cash = cash
         self.hand: list[Card] = []

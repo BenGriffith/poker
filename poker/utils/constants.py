@@ -7,6 +7,7 @@ NUMBER_CARDS = list(range(2, 11))
 INCREMENT_LIMIT = 20
 SINGLE_CHIP = 1
 DOUBLE = 2
+COMPETITION = (list(range(1, 4)))
 
 
 class Chip(Enum):

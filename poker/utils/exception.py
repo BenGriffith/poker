@@ -15,6 +15,20 @@ class CashException(BaseException):
         super().__init__(self.message)
 
 
+class NegativeException(BaseException):
+
+    def __init__(self):
+        self.message = "value should be greater than 0"
+        super().__init__(self.message)
+
+
+class RangeException(BaseException):
+    
+    def __init__(self):
+        self.message = "value falls outside range"
+        super().__init__(self.message)
+
+
 class GamePlayException(BaseException):
 
     def __init__(self):
