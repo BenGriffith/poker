@@ -6,14 +6,14 @@ from poker.utils.deck import Deck, Card
 
 class Player:
 
-    def __init__(self, name: str, cash: int = 0) -> None:
+    def __init__(self, name: str = None, cash: int = 0) -> None:
         self.name = name
         self.cash = cash
         self.hand: list[Card] = []
-        self.chips = PlayerStack()
+        self.stack = PlayerStack()
 
     def buy_chips(self, value: int) -> None:
-        self.chips.increment(value)
+        self.stack.increment(value)
         self.cash -= value
 
 
