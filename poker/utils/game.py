@@ -1,12 +1,13 @@
 import random
 import logging
+import time
 
 from faker import Faker
 
 from poker.utils.player import Dealer, Player, Computer
 from poker.utils.action import Action
 from poker.utils.chip import GameStack
-from poker.utils.constants import Blind, Decision, Cash, COMPETITION
+from poker.utils.constants import Blind, Decision, Cash, COMPETITION, Chip
 from poker.utils.exception import GamePlayException, NegativeException, RangeException, CashException
 
 
@@ -51,12 +52,6 @@ class GameMessage:
             raise CashException
         return competition_num, competition_cash
     
-    def shuffling(self) -> str:
-        print("Shuffling deck...")
-    
-    def dealing_card(self, desc: str) -> str:
-        print(f"Dealing {desc}")
-
 
 class Game:
 
@@ -64,8 +59,9 @@ class Game:
         self.game_message = message
         self.dealer = dealer
         self.player = player
-        self.action = Action
         self.pot = GameStack()
+        self.competition = {}
+
 
     def start(self) -> None:
         while True:
@@ -73,40 +69,40 @@ class Game:
             try:
                 start_game = self.game_message.play()
                 if start_game:
-                    player_name = self.game_message.ask_name()
-                    self.player.name = player_name
-                    self.player.cash = self._setup_player_cash(player_name)
+                    self.player.name = self.game_message.ask_name()
+                    self.player.cash = self._setup_player_cash(self.player.name)
                 else:
                     break
             except GamePlayException:
+                time.sleep(5)
                 break
+
 
     def _setup_player_cash(self, name: str) -> None:
         try:
-            player_cash = self.game_message.starting_cash(name)
+            self.player.cash = self.game_message.starting_cash(name)
         except (ValueError, NegativeException, CashException):
             self._setup_player_cash(name)
 
-        self.player.cash = player_cash
         self.player.buy_chips(self.player.cash)
         self._setup_competition(name)
 
+
     def _setup_competition(self, name: str) -> None:
         try:
-            competition_num, competition_cash = self.game_message.competition(name)
+            competition_count, competition_cash = self.game_message.competition(name)
         except (ValueError, NegativeException, RangeException, CashException):
             self._setup_competition(name)
 
-        self._create_competition(competition_num, competition_cash)
+        self._create_competition(competition_count, competition_cash)
         self._game_order()
         self._preflop()
+
 
     def _create_competition(self, competitors: int, cash: int) -> None:
         fake = Faker()
         Faker.seed(0)        
-
         first_names = [fake.unique.first_name() for _ in range(500)]
-        self.competition = {}
 
         for _ in range(competitors):
             name = random.choice(first_names)
@@ -115,55 +111,57 @@ class Game:
         for player_info in self.competition.values():
             player_info.buy_chips(player_info.cash)
 
+
     def _game_order(self) -> None:
         self.game_order = {}
-        for i, player in enumerate([self.player] + list(self.competition.values()), start=1):
+        players = [self.player] + list(self.competition.values())
+        random.shuffle(players)
+        for i, player in enumerate(players, start=1):
             self.game_order[i] = {"player": player}
 
+
     def _preflop(self) -> None:
-        self.game_message.shuffling()
+        print("Shuffling Deck...")
         self.dealer.shuffle_deck()
         for card_number in range(1, 3):
-            self.game_message.dealing_card(card_number)
+            print(f"Dealing Card Number {card_number}")
             for order, players in self.game_order.items():
                 player = players.get("player")
+                print(f"Dealing card to {player.name}")
                 self.dealer.deal_card(player)
+        self._blind()
         self._theflop()
 
+
+    def _blind(self) -> None:
+        for order, player in self.game_order.items():
+            _action = Action(self.pot, player.get("player"))
+            if order == 1:
+                _action.blind(Chip.WHITE.name, Blind.BIG.value)
+            else:
+                _action.blind(Chip.WHITE.name, Blind.SMALL.value)
+
+
     def _theflop(self) -> None:
+        self.game_message.status("Here comes the flop...")
         self.dealer.deck.cards.pop()
         for card_number in range(1, 4):
             self.dealer.deal_card(self.dealer)
+            self.game_message.status(f"Community card {card_number} is {self.dealer.hand[card_number - 1]}")
         self._theturn()
-    
+
+
     def _theturn(self) -> None:
         self.dealer.deck.cards.pop()
         self.dealer.deal_card(self.dealer)
         self._theriver()
 
+
     def _theriver(self) -> None:
         self.dealer.deck.cards.pop()
         self.dealer.deal_card(self.dealer)
-        breakpoint()
         self._showdown()
+
 
     def _showdown(self) -> None:
         pass # declare winner
-
-
-
-
-
-        # self.dealer.deck.cards.pop()
-
-        # for _ in range(3):
-        #     self.dealer.deal_card(self.dealer)
-
-        # self.dealer.deck.cards.pop()
-
-        # self.dealer.deal_card(self.dealer)
-
-        # self.dealer.deck.cards.pop()
-
-        # self.dealer.deal_card(self.dealer)
-
