@@ -12,8 +12,8 @@ class Action:
         pass
 
     def bet(self, chip: str, value: int) -> None:
-        self.game.pot.increment(chip, value)
-        self.person.chips.decrement(chip, value)
+        self.game_stack.increment(chip, value)
+        self.person.stack.decrement(chip, value)
 
     def call(self, chip: str, value: int) -> None:
         self.bet(chip, value)
@@ -21,5 +21,8 @@ class Action:
     def fold(self) -> None:
         self.person.hand = []
 
-    def increase(self, chip: str, value: int) -> None:
+    def increase(self, chip: str, value: int) -> None: # raise
+        self.bet(chip, value)
+
+    def blind(self, chip: str, value: int) -> None:
         self.bet(chip, value)

@@ -20,19 +20,20 @@ class PlayerStack:
         if cash == Cash.FIVE.value:
             self.chips[Chip.WHITE.name] += SINGLE_CHIP * Cash.FIVE.value
         elif cash == Cash.TEN.value:
-            self.chips[Chip.WHITE.name] += SINGLE_CHIP * Cash.FIVE.value
-            self.chips[Chip.RED.name] += SINGLE_CHIP
+            self.chips[Chip.WHITE.name] += SINGLE_CHIP * Cash.TEN.value
         elif cash == Cash.FIFTEEN.value:
-            self.chips[Chip.RED.name] += SINGLE_CHIP
-            self.chips[Chip.BLUE.name] += SINGLE_CHIP
+            self.chips[Chip.WHITE.name] += SINGLE_CHIP * Cash.FIFTEEN.value
         else:
-            self.chips[Chip.RED.name] += SINGLE_CHIP * DOUBLE
-            self.chips[Chip.BLUE.name] += SINGLE_CHIP
+            self.chips[Chip.WHITE.name] += SINGLE_CHIP * Cash.TWENTY.value
+
     
     def decrement(self, chip: str, value: int) -> None:
         self.chips[chip] -= value
 
     def redeem(self):
+        """
+        Exchange higher value chips for lower value chips
+        """
         pass
 
     def chip_count(self) -> tuple:

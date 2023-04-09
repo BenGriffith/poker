@@ -52,6 +52,10 @@ class GameMessage:
             raise CashException
         return competition_num, competition_cash
     
+    def action(self, name: str) -> str:
+        player_response = input(f"{name}, what would you like to do? ")
+        return player_response
+    
 
 class Game:
 
@@ -59,6 +63,7 @@ class Game:
         self.game_message = message
         self.dealer = dealer
         self.player = player
+        self.action = Action
         self.pot = GameStack()
         self.competition = {}
 
@@ -135,11 +140,64 @@ class Game:
 
     def _blind(self) -> None:
         for order, player in self.game_order.items():
-            _action = Action(self.pot, player.get("player"))
+            _action = self.action(self.pot, player.get("player"))
             if order == 1:
                 _action.blind(Chip.WHITE.name, Blind.BIG.value)
             else:
                 _action.blind(Chip.WHITE.name, Blind.SMALL.value)
+
+
+    def _action(self) -> None:
+        action_log = {}
+        bet = 0
+        for order, player in self.game_order.items():
+            player = player.get("player")
+
+            # player or computer
+            if player.kind == "Computer":
+                player_action = player.select_action(bet)
+            else:
+                player_action = self.game_message.action(player.name)
+
+            if player_action == "fold":
+                action_log[order] = player_action
+                continue
+
+            if player_action == "check":
+                action_log[order] = player_action
+                continue
+
+            if player_action in ["bet", "call"]:
+                action_log[order] = player_action
+                bet = player.process_action(bet)
+                self.pot.increment(Chip.WHITE.name, bet)
+
+
+
+        # remove any players that folded from _game_order
+            
+
+        """
+        what would you like to do check, bet, call or fold
+
+        if check move on to next player - done
+
+        if fold move on to next player - done
+        
+        if bet
+            if confirm player has enough and then ask how much - done
+            if bet all other players will have to call or fold 
+
+        if call
+            confirm player has enough and then do so
+            if not then fold
+
+
+        
+
+
+        if theres any person that performed a check and later person bet then come back to person that performed check
+        """
 
 
     def _theflop(self) -> None:
