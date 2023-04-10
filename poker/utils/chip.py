@@ -23,8 +23,12 @@ class PlayerStack:
             self.chips[Chip.WHITE.name] += SINGLE_CHIP * Cash.TEN.value
         elif cash == Cash.FIFTEEN.value:
             self.chips[Chip.WHITE.name] += SINGLE_CHIP * Cash.FIFTEEN.value
-        else:
+        elif cash == Cash.TWENTY.value:
             self.chips[Chip.WHITE.name] += SINGLE_CHIP * Cash.TWENTY.value
+        elif cash == Cash.FIFTY.value:
+            self.chips[Chip.WHITE.name] += SINGLE_CHIP * Cash.FIFTY.value
+        else:
+            self.chips[Chip.WHITE.name] += SINGLE_CHIP * Cash.HUNDRED.value
 
     
     def decrement(self, chip: str, value: int) -> None:

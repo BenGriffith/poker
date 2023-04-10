@@ -56,6 +56,10 @@ class GameMessage:
         player_response = input(f"{name}, what would you like to do? ")
         return player_response
     
+    def increase(self, name: str) -> int:
+        player_response = int(input(f"{name}, how much would you like to raise? "))
+        return player_response
+    
 
 class Game:
 
@@ -149,15 +153,16 @@ class Game:
 
     def _action(self) -> None:
         action_log = {}
-        bet = 0
+        increase = 0
         for order, player in self.game_order.items():
             player = player.get("player")
 
-            # player or computer
             if player.kind == "Computer":
-                player_action = player.select_action(bet)
+                player_action = player.select_action(increase)
             else:
                 player_action = self.game_message.action(player.name)
+                if player_action == "increase":
+                    increase = self.game_message.increase(player.name)
 
             if player_action == "fold":
                 action_log[order] = player_action
@@ -167,45 +172,31 @@ class Game:
                 action_log[order] = player_action
                 continue
 
-            if player_action in ["bet", "call"]:
-                action_log[order] = player_action
-                bet = player.process_action(bet)
-                self.pot.increment(Chip.WHITE.name, bet)
+            if player_action in ["increase", "call"]:
+                increase = player.process_action(increase)
+                action_log[order] = {player_action: increase}
+                self.pot.increment(Chip.WHITE.name, increase)
+
+        self._remove_fold_players(action_log)
+
+    def _process_checks_to_calls(self, log):
+        pass
 
 
-
-        # remove any players that folded from _game_order
+    def _remove_fold_players(self, log: dict) -> None:
+        breakpoint()
+        for order, action in log.items():
+            if action == "fold":
+                del self.game_order[order]
             
 
-        """
-        what would you like to do check, bet, call or fold
-
-        if check move on to next player - done
-
-        if fold move on to next player - done
-        
-        if bet
-            if confirm player has enough and then ask how much - done
-            if bet all other players will have to call or fold 
-
-        if call
-            confirm player has enough and then do so
-            if not then fold
-
-
-        
-
-
-        if theres any person that performed a check and later person bet then come back to person that performed check
-        """
-
-
     def _theflop(self) -> None:
-        self.game_message.status("Here comes the flop...")
+        print("Here comes the flop...")
         self.dealer.deck.cards.pop()
         for card_number in range(1, 4):
             self.dealer.deal_card(self.dealer)
-            self.game_message.status(f"Community card {card_number} is {self.dealer.hand[card_number - 1]}")
+            print(f"Community card {card_number} is {self.dealer.hand[card_number - 1]}")
+        self._action()
         self._theturn()
 
 

@@ -18,36 +18,45 @@ class Player:
         self.stack.increment(value)
         self.cash -= value
 
+    def process_action(self, increase: int) -> int:
+        if increase == 0:
+            # bet
+            self.stack.decrement(Chip.WHITE.name, increase)
+            return increase
+        else: 
+            # match bet or call
+            self.stack.decrement(Chip.WHITE.name, increase)
+            return increase
+
 
 class Computer(Player):
 
     def __init__(self, name, cash) -> None:
         Player.__init__(self, name, cash)
 
-    def select_action(self, bet: int) -> str:
-        if bet == 0:
-            return random.choice(["check", "bet"])
+    def select_action(self, increase: int) -> str:
+        if increase == 0:
+            return random.choice(["check", "increase"])
         else:
-            if bet <= self.stack.cash_equivalent():
+            if increase <= self.stack.cash_equivalent():
                 return "call"
             else:
                 return "fold"
                 
 
-    def process_action(self, bet: int) -> int:
+    def process_action(self, increase: int) -> int:
         white, red, blue = self.stack.chip_count()
-        if bet == 0:
+        if increase == 0:
             # random bet or bet
-            white_chips = random.randint(1, white - 1)
+            white_third = white // 3
+            white_chips = random.randint(1, white_third)
             self.stack.decrement(Chip.WHITE.name, white_chips)
             return white_chips
         else: 
             # match bet or call
-            self.stack.decrement(Chip.WHITE.name, bet)
-            return bet
+            self.stack.decrement(Chip.WHITE.name, increase)
+            return increase
             
-
-
 
 class Dealer(Player):
 
