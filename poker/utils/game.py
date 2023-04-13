@@ -52,8 +52,11 @@ class GameMessage:
             raise CashException
         return competition_num, competition_cash
     
-    def action(self, name: str) -> str:
-        player_response = input(f"{name}, what would you like to do? ")
+    def action(self, name: str, has_raise: bool, raise_amount: int) -> str:
+        if has_raise:
+            player_response = input(f"{name}, another player raised the bet by {raise_amount}, what would you like to do? ") # call or fold
+        else:
+            player_response = input(f"{name}, what would you like to do? ")
         return player_response
     
     def increase(self, name: str) -> int:
@@ -151,18 +154,25 @@ class Game:
                 _action.blind(Chip.WHITE.name, Blind.SMALL.value)
 
 
-    def _action(self) -> None:
+    def _action(self) -> tuple:
         action_log = {}
-        increase = 0
+        raise_amount = 0
+        has_raise = False
         for order, player in self.game_order.items():
             player = player.get("player")
 
             if player.kind == "Computer":
-                player_action = player.select_action(increase)
+                player_action = player.select_action(raise_amount)
             else:
-                player_action = self.game_message.action(player.name)
-                if player_action == "increase":
-                    increase = self.game_message.increase(player.name)
+
+                player_action = self.game_message.action(player.name, has_raise, raise_amount)
+                if player_action == "call":
+                    call_amount = player.process_action(raise_amount)
+                    action_log[order] = {player_action: call_amount}
+                    self.pot.increment(Chip.WHITE.name, call_amount)  
+            
+                if player_action == "raise":
+                    raise_amount = self.game_message.increase(player.name)
 
             if player_action == "fold":
                 action_log[order] = player_action
@@ -172,19 +182,54 @@ class Game:
                 action_log[order] = player_action
                 continue
 
-            if player_action in ["increase", "call"]:
-                increase = player.process_action(increase)
-                action_log[order] = {player_action: increase}
-                self.pot.increment(Chip.WHITE.name, increase)
+            if player_action == "raise":
+                has_raise = True
+                raise_amount = player.process_action(raise_amount)
+                action_log[order] = {player_action: raise_amount}
+                self.pot.increment(Chip.WHITE.name, raise_amount)
 
-        self._remove_fold_players(action_log)
+            if player_action == "call":
+                call_amount = player.process_action(raise_amount)
+                action_log[order] = {player_action: call_amount}
+                self.pot.increment(Chip.WHITE.name, call_amount)             
 
-    def _process_checks_to_calls(self, log):
-        pass
+        return action_log
+
+
+    def _process_checks_to_calls(self, log: dict) -> None:
+        call_amount = 0
+        players_with_check_action = []
+        for order, action in log.items():
+            if action == "check":
+                players_with_check_action.append(order)
+        for order, action in log.items():
+            if isinstance(action, dict):
+                call_amount = [value for value in action.values()][0]
+                break
+
+        if call_amount > 0:
+            for player_id in players_with_check_action:
+
+                player = self.game_order[player_id].get("player")
+                if player.kind == "Computer":
+                    player_action = player.select_action(call_amount)
+                    if player_action == "fold":
+                        log[player_id] = player_action
+                    if player_action == "call":
+                        call_amount = player.process_action(call_amount)
+                        log[player_id] = {player_action: call_amount}
+                        self.pot.increment(Chip.WHITE.name, call_amount)
+                else:
+                    player_action = self.game_message.action(player.name, True, call_amount)
+                    if player_action == "fold":
+                        log[player_id] = player_action
+                    if player_action == "call":
+                        call_amount = player.process_action(call_amount)
+                        log[player_id] = {player_action: call_amount}
+                        self.pot.increment(Chip.WHITE.name, call_amount)
 
 
     def _remove_fold_players(self, log: dict) -> None:
-        breakpoint()
         for order, action in log.items():
             if action == "fold":
                 del self.game_order[order]
@@ -196,7 +241,9 @@ class Game:
         for card_number in range(1, 4):
             self.dealer.deal_card(self.dealer)
             print(f"Community card {card_number} is {self.dealer.hand[card_number - 1]}")
-        self._action()
+        action_log = self._action()
+        self._process_checks_to_calls(action_log)
+        self._remove_fold_players(action_log)
         self._theturn()
 
 

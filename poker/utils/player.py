@@ -18,15 +18,15 @@ class Player:
         self.stack.increment(value)
         self.cash -= value
 
-    def process_action(self, increase: int) -> int:
-        if increase == 0:
+    def process_action(self, raise_amount: int) -> int:
+        if raise_amount == 0:
             # bet
-            self.stack.decrement(Chip.WHITE.name, increase)
-            return increase
+            self.stack.decrement(Chip.WHITE.name, raise_amount)
+            return raise_amount
         else: 
             # match bet or call
-            self.stack.decrement(Chip.WHITE.name, increase)
-            return increase
+            self.stack.decrement(Chip.WHITE.name, raise_amount)
+            return raise_amount
 
 
 class Computer(Player):
@@ -34,19 +34,19 @@ class Computer(Player):
     def __init__(self, name, cash) -> None:
         Player.__init__(self, name, cash)
 
-    def select_action(self, increase: int) -> str:
-        if increase == 0:
-            return random.choice(["check", "increase"])
+    def select_action(self, raise_amount: int) -> str:
+        if raise_amount == 0:
+            return random.choice(["check", "raise"])
         else:
-            if increase <= self.stack.cash_equivalent():
+            if raise_amount <= self.stack.cash_equivalent():
                 return "call"
             else:
                 return "fold"
                 
 
-    def process_action(self, increase: int) -> int:
+    def process_action(self, raise_amount: int) -> int:
         white, red, blue = self.stack.chip_count()
-        if increase == 0:
+        if raise_amount == 0:
             # random bet or bet
             white_third = white // 3
             white_chips = random.randint(1, white_third)
@@ -54,8 +54,8 @@ class Computer(Player):
             return white_chips
         else: 
             # match bet or call
-            self.stack.decrement(Chip.WHITE.name, increase)
-            return increase
+            self.stack.decrement(Chip.WHITE.name, raise_amount)
+            return raise_amount
             
 
 class Dealer(Player):
