@@ -7,67 +7,15 @@ from faker import Faker
 from poker.utils.player import Dealer, Player, Computer
 from poker.utils.action import Action
 from poker.utils.chip import GameStack
+from poker.utils.message import GameMessage
 from poker.utils.constants import Blind, Decision, Cash, COMPETITION, Chip
-from poker.utils.exception import GamePlayException, NegativeException, RangeException, CashException
-
-
-class GameMessage:
-
-    def __init__(self) -> None:
-        self.cash_options = [item.value for item in Cash]
-
-    def greeting(self) -> None:
-        print("Welcome to Texas hold'em! ")
-
-    def play(self) -> bool:
-        player_response = input("Would you like to play a game? [yes/no] ").lower()
-        valid_response = [item.value for item in Decision]
-        if player_response in [Decision.N.value, Decision.NO.value]:
-            return False
-        if player_response not in valid_response:
-            # TODO logger
-            raise GamePlayException
-        return True
-    
-    def ask_name(self) -> str:
-        player_response = input("What is your name? ").strip().capitalize()
-        if player_response == "":
-            return "Tron"
-        return player_response
-    
-    def starting_cash(self, name: str) -> int:
-        player_response = int(input(f"{name}, how much money would you like to start off with? {self.cash_options} "))
-        if player_response <= 0:
-            raise NegativeException
-        if player_response not in self.cash_options:
-            raise CashException
-        return player_response
-    
-    def competition(self, name: str) -> int:
-        competition_num = int(input(f"{name}, how many players would you like to play against? [1 to 3] "))
-        if competition_num not in COMPETITION:
-            raise RangeException
-        competition_cash = int(input(f"How much cash should each player get? {self.cash_options} "))
-        if competition_cash not in self.cash_options:
-            raise CashException
-        return competition_num, competition_cash
-    
-    def action(self, name: str, has_raise: bool, raise_amount: int) -> str:
-        if has_raise:
-            player_response = input(f"{name}, another player raised the bet by {raise_amount}, what would you like to do? ") # call or fold
-        else:
-            player_response = input(f"{name}, what would you like to do? ")
-        return player_response
-    
-    def increase(self, name: str) -> int:
-        player_response = int(input(f"{name}, how much would you like to raise? "))
-        return player_response
+from poker.utils.exception import NegativeException, RangeException, CashException
     
 
 class Game:
 
     def __init__(self, message: GameMessage, dealer: Dealer, player: Player) -> None:
-        self.game_message = message
+        self.message = message
         self.dealer = dealer
         self.player = player
         self.action = Action
@@ -77,22 +25,21 @@ class Game:
 
     def start(self) -> None:
         while True:
-            self.game_message.greeting()
             try:
-                start_game = self.game_message.play()
+                start_game = self.message.play()
                 if start_game:
-                    self.player.name = self.game_message.ask_name()
+                    self.player.name = self.message.ask_name()
                     self.player.cash = self._setup_player_cash(self.player.name)
                 else:
                     break
-            except GamePlayException:
-                time.sleep(5)
+            except:
+                pass # logger
                 break
 
 
     def _setup_player_cash(self, name: str) -> None:
         try:
-            self.player.cash = self.game_message.starting_cash(name)
+            self.player.cash = self.message.starting_cash(name)
         except (ValueError, NegativeException, CashException):
             self._setup_player_cash(name)
 
@@ -102,7 +49,7 @@ class Game:
 
     def _setup_competition(self, name: str) -> None:
         try:
-            competition_count, competition_cash = self.game_message.competition(name)
+            competition_count, competition_cash = self.message.competition(name)
         except (ValueError, NegativeException, RangeException, CashException):
             self._setup_competition(name)
 
@@ -165,14 +112,14 @@ class Game:
                 player_action = player.select_action(raise_amount)
             else:
 
-                player_action = self.game_message.action(player.name, has_raise, raise_amount)
+                player_action = self.message.action(player.name, has_raise, raise_amount)
                 if player_action == "call":
                     call_amount = player.process_action(raise_amount)
                     action_log[order] = {player_action: call_amount}
                     self.pot.increment(Chip.WHITE.name, call_amount)  
             
                 if player_action == "raise":
-                    raise_amount = self.game_message.increase(player.name)
+                    raise_amount = self.message.increase(player.name)
 
             if player_action == "fold":
                 action_log[order] = player_action
@@ -220,7 +167,7 @@ class Game:
                         log[player_id] = {player_action: call_amount}
                         self.pot.increment(Chip.WHITE.name, call_amount)
                 else:
-                    player_action = self.game_message.action(player.name, True, call_amount)
+                    player_action = self.message.action(player.name, True, call_amount)
                     if player_action == "fold":
                         log[player_id] = player_action
                     if player_action == "call":
@@ -248,16 +195,25 @@ class Game:
 
 
     def _theturn(self) -> None:
+        print("Here comes the turn...")
         self.dealer.deck.cards.pop()
         self.dealer.deal_card(self.dealer)
+        action_log = self._action()
+        self._process_checks_to_calls(action_log)
+        self._remove_fold_players(action_log)
         self._theriver()
 
 
     def _theriver(self) -> None:
+        print("Here comes the river...")
         self.dealer.deck.cards.pop()
         self.dealer.deal_card(self.dealer)
+        action_log = self._action()
+        self._process_checks_to_calls(action_log)
+        self._remove_fold_players(action_log)
         self._showdown()
 
 
     def _showdown(self) -> None:
+        breakpoint()
         pass # declare winner
