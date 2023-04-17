@@ -33,27 +33,37 @@ class Game:
                 else:
                     break
             except:
-                pass # logger
+                pass # setup logger
                 break
 
 
     def _setup_player_cash(self, name: str) -> None:
         try:
             self.player.cash = self.message.starting_cash(name)
-        except (ValueError, NegativeException, CashException):
+        except (ValueError, CashException):
             self._setup_player_cash(name)
-
         self.player.buy_chips(self.player.cash)
-        self._setup_competition(name)
+        self._setup_competition_count(name)
 
 
-    def _setup_competition(self, name: str) -> None:
+    def _setup_competition_count(self, name: str) -> None:
         try:
-            competition_count, competition_cash = self.message.competition(name)
-        except (ValueError, NegativeException, RangeException, CashException):
-            self._setup_competition(name)
+            competition_count = self.message.competition_count(name)
+        except (ValueError, RangeException):
+            self._setup_competition_count(name)
+        self._setup_competition_cash(name, competition_count)
 
-        self._create_competition(competition_count, competition_cash)
+
+    def _setup_competition_cash(self, name: str, competition_count: int) -> None:
+        try:
+            competition_cash = self.message.competition_cash(name)
+        except (ValueError, CashException):
+            self._setup_competition_cash(name)
+        self._setup_competition(competition_count, competition_cash)
+
+
+    def _setup_competition(self, count: int, cash: int) -> None:
+        self._create_competition(count, cash)
         self._game_order()
         self._preflop()
 

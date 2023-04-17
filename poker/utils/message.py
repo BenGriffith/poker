@@ -30,14 +30,18 @@ class GameMessage:
         return player_response
     
     
-    def competition(self, name: str) -> int:
-        competition_num = int(input(f"{name}, how many players would you like to play against? [1 to 3] "))
-        if competition_num not in COMPETITION:
+    def competition_count(self, name: str) -> int:
+        count = int(input(f"{name}, how many players would you like to play against? {COMPETITION} "))
+        if count not in COMPETITION:
             raise RangeException
-        competition_cash = int(input(f"How much cash should each player get? {self.cash_options} "))
-        if competition_cash not in self.cash_options:
+        return count
+
+
+    def competition_cash(self, name: str) -> int:
+        cash = int(input(f"How much cash should each player get? {self.cash_options} "))
+        if cash not in self.cash_options:
             raise CashException
-        return competition_num, competition_cash
+        return cash
     
     
     def action(self, name: str, has_raise: bool, raise_amount: int) -> str:
