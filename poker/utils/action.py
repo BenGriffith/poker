@@ -4,7 +4,12 @@ from poker.utils.player import Player
 
 class Action:
 
-    def __init__(self, game_stack: GameStack, player: Player) -> None:
+    CHECK = "check"
+    RAISE = "raise"
+    CALL = "call"
+    FOLD = "fold"
+
+    def __init__(self, game_stack: GameStack, player: Player = None) -> None:
         self.game_stack = game_stack
         self.person = player
 

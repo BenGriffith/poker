@@ -3,6 +3,7 @@ import logging
 import time
 
 from faker import Faker
+from rich.console import Console
 
 from poker.utils.player import Dealer, Player, Computer
 from poker.utils.action import Action
@@ -18,8 +19,8 @@ class Game:
         self.message = message
         self.dealer = dealer
         self.player = player
-        self.action = Action
         self.pot = GameStack()
+        self.action = Action(self.pot)
         self.competition = {}
 
 
@@ -58,64 +59,76 @@ class Game:
         try:
             competition_cash = self.message.competition_cash(name)
         except (ValueError, CashException):
-            self._setup_competition_cash(name)
-        self._setup_competition(competition_count, competition_cash)
+            self._setup_competition_cash(name, competition_count)
+        self._create_competition(competition_count, competition_cash)
 
 
-    def _setup_competition(self, count: int, cash: int) -> None:
-        self._create_competition(count, cash)
-        self._game_order()
+    def _setup_competition_names(self) -> None:
+        fake = Faker()
+        Faker.seed(0)        
+        return [fake.unique.first_name() for _ in range(500)]
+
+
+    def _create_competition(self, count: int, cash: int) -> None:
+        names = self._setup_competition_names()
+
+        for _ in range(count):
+            player_name = random.choice(names)
+            self.competition[player_name] = Computer(player_name, cash)
+
+        for player in self.competition.values():
+            player.buy_chips(player.cash)
+        self._player_order()
         self._preflop()
 
 
-    def _create_competition(self, competitors: int, cash: int) -> None:
-        fake = Faker()
-        Faker.seed(0)        
-        first_names = [fake.unique.first_name() for _ in range(500)]
-
-        for _ in range(competitors):
-            name = random.choice(first_names)
-            self.competition[name] = Computer(name, cash)
-    
-        for player_info in self.competition.values():
-            player_info.buy_chips(player_info.cash)
-
-
-    def _game_order(self) -> None:
-        self.game_order = {}
+    def _player_order(self) -> None:
+        self.player_order = {}
         players = [self.player] + list(self.competition.values())
         random.shuffle(players)
-        for i, player in enumerate(players, start=1):
-            self.game_order[i] = {"player": player}
+        for player_id, player in enumerate(players, start=1):
+            self.player_order[player_id] = {"player": player}
+        
+        time.sleep(1)
+        
+        game_pot, game_cards, player_table = self.message.summary(self.pot, self.dealer.hand, self.player_order)
+        console = Console()
+        console.print("", game_pot)
+        console.print("", game_cards)
+        console.print("", player_table)
 
 
     def _preflop(self) -> None:
         print("Shuffling Deck...")
         self.dealer.shuffle_deck()
+        time.sleep(1)
         for card_number in range(1, 3):
-            print(f"Dealing Card Number {card_number}")
-            for order, players in self.game_order.items():
-                player = players.get("player")
-                print(f"Dealing card to {player.name}")
-                self.dealer.deal_card(player)
+            print(f"Dealing {'First' if card_number == 1 else 'Second'} Card")
+            time.sleep(1)
+            for player in self.player_order.values():
+                current_player = player.get("player")
+                print(f"Dealt card to {current_player.name}")
+                self.dealer.deal_card(current_player)
+                time.sleep(1)
+            time.sleep(1)
         self._blind()
-        self._theflop()
 
 
     def _blind(self) -> None:
-        for order, player in self.game_order.items():
-            _action = self.action(self.pot, player.get("player"))
-            if order == 1:
-                _action.blind(Chip.WHITE.name, Blind.BIG.value)
+        for player_id, player in self.player_order.items():
+            self.action.person = player.get("player")
+            if player_id == 1:
+                self.action.blind(Chip.WHITE.name, Blind.BIG.value)
             else:
-                _action.blind(Chip.WHITE.name, Blind.SMALL.value)
+                self.action.blind(Chip.WHITE.name, Blind.SMALL.value)
+        self._theflop()
 
 
     def _action(self) -> tuple:
         action_log = {}
         raise_amount = 0
         has_raise = False
-        for order, player in self.game_order.items():
+        for order, player in self.player_order.items():
             player = player.get("player")
 
             if player.kind == "Computer":
@@ -123,29 +136,29 @@ class Game:
             else:
 
                 player_action = self.message.action(player.name, has_raise, raise_amount)
-                if player_action == "call":
+                if player_action == self.action.CALL:
                     call_amount = player.process_action(raise_amount)
                     action_log[order] = {player_action: call_amount}
                     self.pot.increment(Chip.WHITE.name, call_amount)  
             
-                if player_action == "raise":
+                if player_action == self.action.RAISE:
                     raise_amount = self.message.increase(player.name)
 
-            if player_action == "fold":
+            if player_action == self.action.FOLD:
                 action_log[order] = player_action
                 continue
 
-            if player_action == "check":
+            if player_action == self.action.CHECK:
                 action_log[order] = player_action
                 continue
 
-            if player_action == "raise":
+            if player_action == self.action.RAISE:
                 has_raise = True
                 raise_amount = player.process_action(raise_amount)
                 action_log[order] = {player_action: raise_amount}
                 self.pot.increment(Chip.WHITE.name, raise_amount)
 
-            if player_action == "call":
+            if player_action == self.action.CALL:
                 call_amount = player.process_action(raise_amount)
                 action_log[order] = {player_action: call_amount}
                 self.pot.increment(Chip.WHITE.name, call_amount)             
@@ -167,7 +180,7 @@ class Game:
         if call_amount > 0:
             for player_id in players_with_check_action:
 
-                player = self.game_order[player_id].get("player")
+                player = self.player_order[player_id].get("player")
                 if player.kind == "Computer":
                     player_action = player.select_action(call_amount)
                     if player_action == "fold":
@@ -189,7 +202,7 @@ class Game:
     def _remove_fold_players(self, log: dict) -> None:
         for order, action in log.items():
             if action == "fold":
-                del self.game_order[order]
+                del self.player_order[order]
             
 
     def _theflop(self) -> None:

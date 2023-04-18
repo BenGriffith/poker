@@ -1,5 +1,8 @@
+from rich.table import Table
+
 from poker.utils.constants import Blind, Decision, Cash, COMPETITION, Chip
 from poker.utils.exception import NegativeException, RangeException, CashException
+from poker.utils.chip import GameStack
 
 
 class GameMessage:
@@ -38,7 +41,7 @@ class GameMessage:
 
 
     def competition_cash(self, name: str) -> int:
-        cash = int(input(f"How much cash should each player get? {self.cash_options} "))
+        cash = int(input(f"{name}, how much cash should each player get? {self.cash_options} "))
         if cash not in self.cash_options:
             raise CashException
         return cash
@@ -55,3 +58,38 @@ class GameMessage:
     def increase(self, name: str) -> int:
         player_response = int(input(f"{name}, how much would you like to raise? "))
         return player_response
+    
+
+    def summary(self, pot: GameStack, community_cards: list, players: dict) -> tuple:
+
+        game_pot_table = Table(title="Pot")
+        game_pot_table.add_column("Chip")
+        game_pot_table.add_column("Chip Count")
+        game_pot_table.add_row("1", "2")
+
+        game_cards_table = Table(title="Community Cards")
+        game_cards_table.add_column("Cards")
+        game_cards_table.add_row("test")
+
+        player_table = Table(title="Player Summary")
+        player_table.add_column("Player Order")
+        player_table.add_column("Player Name")
+        player_table.add_column("Chips")
+        for player_id, player in players.items():
+            player = player.get("player")
+            player_table.add_row(str(player_id), player.name, f"{Chip.WHITE.name}: {player.stack.chips[Chip.WHITE.name]}")
+
+        return (game_pot_table, game_cards_table, player_table)
+
+
+        """
+        summary different checkpoints
+
+        player order
+        player name
+        chip count
+        game pot
+        community cards
+
+        ask main player to press button when reay to continue
+        """
