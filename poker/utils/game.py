@@ -3,14 +3,13 @@ import logging
 import time
 
 from faker import Faker
-from rich.console import Console
 
 from poker.utils.player import Dealer, Player, Computer
 from poker.utils.action import Action
 from poker.utils.chip import GameStack
 from poker.utils.message import GameMessage
-from poker.utils.constants import Blind, Decision, Cash, COMPETITION, Chip
-from poker.utils.exception import NegativeException, RangeException, CashException
+from poker.utils.constants import Blind, Chip
+from poker.utils.exception import RangeException, CashException
     
 
 class Game:
@@ -30,7 +29,8 @@ class Game:
                 start_game = self.message.play()
                 if start_game:
                     self.player.name = self.message.ask_name()
-                    self.player.cash = self._setup_player_cash(self.player.name)
+                    self.player.cash = self._setup_player_cash()
+                    breakpoint()
                 else:
                     break
             except:
@@ -38,28 +38,28 @@ class Game:
                 break
 
 
-    def _setup_player_cash(self, name: str) -> None:
+    def _setup_player_cash(self) -> None:
         try:
-            self.player.cash = self.message.starting_cash(name)
+            self.player.cash = self.message.starting_cash(self.player.name)
         except (ValueError, CashException):
-            self._setup_player_cash(name)
+            self._setup_player_cash(self.player.name)
         self.player.buy_chips(self.player.cash)
-        self._setup_competition_count(name)
+        self._setup_competition_count()
 
 
-    def _setup_competition_count(self, name: str) -> None:
+    def _setup_competition_count(self) -> None:
         try:
-            competition_count = self.message.competition_count(name)
+            competition_count = self.message.competition_count(self.player.name)
         except (ValueError, RangeException):
-            self._setup_competition_count(name)
-        self._setup_competition_cash(name, competition_count)
+            self._setup_competition_count()
+        self._setup_competition_cash(competition_count)
 
 
-    def _setup_competition_cash(self, name: str, competition_count: int) -> None:
+    def _setup_competition_cash(self, competition_count: int) -> None:
         try:
-            competition_cash = self.message.competition_cash(name)
+            competition_cash = self.message.competition_cash(self.player.name)
         except (ValueError, CashException):
-            self._setup_competition_cash(name, competition_count)
+            self._setup_competition_cash(competition_count)
         self._create_competition(competition_count, competition_cash)
 
 
@@ -88,18 +88,13 @@ class Game:
         random.shuffle(players)
         for player_id, player in enumerate(players, start=1):
             self.player_order[player_id] = {"player": player}
-        
         time.sleep(1)
-        
-        game_pot, game_cards, player_table = self.message.summary(self.pot, self.dealer.hand, self.player_order)
-        console = Console()
-        console.print("", game_pot)
-        console.print("", game_cards)
-        console.print("", player_table)
+        self.message.player_summary(self.player_order)
+        self.message.game_progression_prompt(self.player.name)
 
 
     def _preflop(self) -> None:
-        print("Shuffling Deck...")
+        print("\n", "Shuffling Deck...")
         self.dealer.shuffle_deck()
         time.sleep(1)
         for card_number in range(1, 3):
@@ -121,6 +116,10 @@ class Game:
                 self.action.blind(Chip.WHITE.name, Blind.BIG.value)
             else:
                 self.action.blind(Chip.WHITE.name, Blind.SMALL.value)
+        time.sleep(2)
+        self.message.player_summary(self.player_order)
+        time.sleep(2)
+        self.message.game_progression_prompt(self.player.name)
         self._theflop()
 
 
@@ -208,9 +207,16 @@ class Game:
     def _theflop(self) -> None:
         print("Here comes the flop...")
         self.dealer.deck.cards.pop()
-        for card_number in range(1, 4):
+        for _ in range(1, 4):
             self.dealer.deal_card(self.dealer)
-            print(f"Community card {card_number} is {self.dealer.hand[card_number - 1]}")
+        time.sleep(2)
+        self.message.game_summary(self.pot, self.dealer.hand)
+        time.sleep(2)
+        self.message.game_progression_prompt(self.player.name)
+        self._process_betting()
+
+
+    def _process_betting(self) -> None:
         action_log = self._action()
         self._process_checks_to_calls(action_log)
         self._remove_fold_players(action_log)

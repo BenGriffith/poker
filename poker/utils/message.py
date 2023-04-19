@@ -1,7 +1,10 @@
-from rich.table import Table
+import time
 
-from poker.utils.constants import Blind, Decision, Cash, COMPETITION, Chip
-from poker.utils.exception import NegativeException, RangeException, CashException
+from rich.table import Table
+from rich.console import Console
+
+from poker.utils.constants import Decision, Cash, COMPETITION, Chip, PlayerTable, GameTable
+from poker.utils.exception import RangeException, CashException, GamePlayException
 from poker.utils.chip import GameStack
 
 
@@ -60,36 +63,52 @@ class GameMessage:
         return player_response
     
 
-    def summary(self, pot: GameStack, community_cards: list, players: dict) -> tuple:
-
-        game_pot_table = Table(title="Pot")
-        game_pot_table.add_column("Chip")
-        game_pot_table.add_column("Chip Count")
-        game_pot_table.add_row("1", "2")
-
-        game_cards_table = Table(title="Community Cards")
-        game_cards_table.add_column("Cards")
-        game_cards_table.add_row("test")
-
-        player_table = Table(title="Player Summary")
-        player_table.add_column("Player Order")
-        player_table.add_column("Player Name")
-        player_table.add_column("Chips")
+    def player_summary(self, players: dict) -> None:
+        player_table = Table(title=PlayerTable.TITLE.value)
+        player_table.add_column(PlayerTable.ORDER.value)
+        player_table.add_column(PlayerTable.NAME.value)
+        player_table.add_column(PlayerTable.CHIPS.value)
+        player_table.add_column(PlayerTable.BLIND.value)
         for player_id, player in players.items():
             player = player.get("player")
-            player_table.add_row(str(player_id), player.name, f"{Chip.WHITE.name}: {player.stack.chips[Chip.WHITE.name]}")
+            player_table.add_row(
+                str(player_id), 
+                player.name, 
+                f"{Chip.WHITE.name}: {player.stack.chips[Chip.WHITE.name]}",
+                "Big" if player_id == 1 else "Small"
+                )
+        console = Console()
+        console.print("", player_table)
+    
 
-        return (game_pot_table, game_cards_table, player_table)
+    def game_progression_prompt(self, name: str, not_ready: bool = None) -> None:
+        try:
+            if not_ready:
+                player_response = input(f"{name}, how about now, are you ready? [yes/no] ")
+            else:
+                player_response = input(f"{name}, are you ready to continue? [yes/no] ")
+            if player_response not in self.decision:
+                raise GamePlayException
+            if player_response in [Decision.N.value, Decision.NO.value]:
+                time.sleep(5)
+                self.game_progression_prompt(name, True)
+        except GamePlayException:
+            time.sleep(5)
+            self.game_progression_prompt(name)
+    
 
+    def game_summary(self, pot: GameStack, community_cards: list) -> None:
+        game_pot_table = Table(title=GameTable.POT.value)
+        game_pot_table.add_column(GameTable.CHIP.value)
+        game_pot_table.add_column(GameTable.COUNT.value)
+        for chip, chip_count in pot.chips.items():
+            game_pot_table.add_row(chip, str(chip_count))
 
-        """
-        summary different checkpoints
+        game_cards_table = Table(title=GameTable.COMMUNITY.value)
+        game_cards_table.add_column(GameTable.COMMUNITY.value.split(" ")[1])
+        for num, card in enumerate(community_cards, start=1):
+            game_cards_table.add_row(f"{str(num)}: {card}")
 
-        player order
-        player name
-        chip count
-        game pot
-        community cards
-
-        ask main player to press button when reay to continue
-        """
+        console = Console()
+        console.print("", game_pot_table)
+        console.print("", game_cards_table)

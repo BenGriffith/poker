@@ -35,3 +35,18 @@ class Decision(Enum):
     NO = "no"
     Y = "y"
     N = "n"
+
+
+class PlayerTable(Enum):
+    TITLE = "Player Summary"
+    ORDER = "Order"
+    NAME = "Name"
+    CHIPS = "Chips"
+    BLIND = "Blind"
+
+
+class GameTable(Enum):
+    POT = "Pot"
+    CHIP = "Chip"
+    COUNT = "Chip Count"
+    COMMUNITY = "Community Cards"
