@@ -8,6 +8,7 @@ INCREMENT_LIMIT = 100
 SINGLE_CHIP = 1
 DOUBLE = 2
 COMPETITION = (list(range(1, 5)))
+PLAYER_NAME = "You"
 
 
 class Chip(Enum):

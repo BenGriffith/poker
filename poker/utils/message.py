@@ -6,6 +6,7 @@ from rich.console import Console
 from poker.utils.constants import Decision, Cash, COMPETITION, Chip, PlayerTable, GameTable
 from poker.utils.exception import RangeException, CashException, GamePlayException
 from poker.utils.chip import GameStack
+from poker.utils.action import Action
 
 
 class GameMessage:
@@ -20,46 +21,39 @@ class GameMessage:
         if player_response in [Decision.Y.value, Decision.YES.value]:
             return True
         return False
-
-    
-    def ask_name(self) -> str:
-        player_response = input("What is your name? ").strip().capitalize()
-        if player_response == "":
-            return "Tron"
-        return player_response
     
     
-    def starting_cash(self, name: str) -> int:
-        player_response = int(input(f"{name}, how much money would you like to start off with? {self.cash_options} "))
+    def starting_cash(self) -> int:
+        player_response = int(input(f"How much money would you like to start off with? {self.cash_options} "))
         if player_response not in self.cash_options:
             raise CashException
         return player_response
     
     
-    def competition_count(self, name: str) -> int:
-        count = int(input(f"{name}, how many players would you like to play against? {COMPETITION} "))
+    def competition_count(self) -> int:
+        count = int(input(f"How many players would you like to play against? {COMPETITION} "))
         if count not in COMPETITION:
             raise RangeException
         return count
 
 
-    def competition_cash(self, name: str) -> int:
-        cash = int(input(f"{name}, how much cash should each player get? {self.cash_options} "))
+    def competition_cash(self) -> int:
+        cash = int(input(f"How much cash should each player get? {self.cash_options} "))
         if cash not in self.cash_options:
             raise CashException
         return cash
     
     
-    def action(self, name: str, has_raise: bool, raise_amount: int) -> str:
+    def action(self, has_raise: bool, raise_amount: int) -> str:
         if has_raise:
-            player_response = input(f"{name}, another player raised the bet by {raise_amount}, what would you like to do? ") # call or fold
+            player_response = input(f"Another player raised the bet by {raise_amount}, what would you like to do? [{Action.CALL} or {Action.FOLD}]")
         else:
-            player_response = input(f"{name}, what would you like to do? ")
+            player_response = input(f"What would you like to do? [{Action.CHECK}, {Action.RAISE} or {Action.FOLD}]")
         return player_response
     
     
-    def increase(self, name: str) -> int:
-        player_response = int(input(f"{name}, how much would you like to raise? "))
+    def increase(self) -> int:
+        player_response = int(input(f"How much would you like to raise? "))
         return player_response
     
 
@@ -81,20 +75,20 @@ class GameMessage:
         console.print("", player_table)
     
 
-    def game_progression_prompt(self, name: str, not_ready: bool = None) -> None:
+    def game_progression_prompt(self, not_ready: bool = None) -> None:
         try:
             if not_ready:
-                player_response = input(f"{name}, how about now, are you ready? [yes/no] ")
+                player_response = input(f"How about now, are you ready? [yes/no] ")
             else:
-                player_response = input(f"{name}, are you ready to continue? [yes/no] ")
+                player_response = input(f"Are you ready to continue? [yes/no] ")
             if player_response not in self.decision:
                 raise GamePlayException
             if player_response in [Decision.N.value, Decision.NO.value]:
                 time.sleep(5)
-                self.game_progression_prompt(name, True)
+                self.game_progression_prompt(True)
         except GamePlayException:
             time.sleep(5)
-            self.game_progression_prompt(name)
+            self.game_progression_prompt()
     
 
     def game_summary(self, pot: GameStack, community_cards: list) -> None:

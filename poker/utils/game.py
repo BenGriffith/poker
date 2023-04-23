@@ -8,7 +8,7 @@ from poker.utils.player import Dealer, Player, Computer
 from poker.utils.action import Action
 from poker.utils.chip import GameStack
 from poker.utils.message import GameMessage
-from poker.utils.constants import Blind, Chip
+from poker.utils.constants import Blind, Chip, PLAYER_NAME
 from poker.utils.exception import RangeException, CashException
     
 
@@ -28,7 +28,7 @@ class Game:
             try:
                 start_game = self.message.play()
                 if start_game:
-                    self.player.name = self.message.ask_name()
+                    self.player.name = PLAYER_NAME
                     self.player.cash = self._setup_player_cash()
                     breakpoint()
                 else:
@@ -40,16 +40,16 @@ class Game:
 
     def _setup_player_cash(self) -> None:
         try:
-            self.player.cash = self.message.starting_cash(self.player.name)
+            self.player.cash = self.message.starting_cash()
         except (ValueError, CashException):
-            self._setup_player_cash(self.player.name)
+            self._setup_player_cash()
         self.player.buy_chips(self.player.cash)
         self._setup_competition_count()
 
 
     def _setup_competition_count(self) -> None:
         try:
-            competition_count = self.message.competition_count(self.player.name)
+            competition_count = self.message.competition_count()
         except (ValueError, RangeException):
             self._setup_competition_count()
         self._setup_competition_cash(competition_count)
@@ -57,7 +57,7 @@ class Game:
 
     def _setup_competition_cash(self, competition_count: int) -> None:
         try:
-            competition_cash = self.message.competition_cash(self.player.name)
+            competition_cash = self.message.competition_cash()
         except (ValueError, CashException):
             self._setup_competition_cash(competition_count)
         self._create_competition(competition_count, competition_cash)
@@ -90,11 +90,11 @@ class Game:
             self.player_order[player_id] = {"player": player}
         time.sleep(1)
         self.message.player_summary(self.player_order)
-        self.message.game_progression_prompt(self.player.name)
+        self.message.game_progression_prompt()
 
 
     def _preflop(self) -> None:
-        print("\n", "Shuffling Deck...")
+        print("Shuffling Deck...")
         self.dealer.shuffle_deck()
         time.sleep(1)
         for card_number in range(1, 3):
@@ -119,7 +119,7 @@ class Game:
         time.sleep(2)
         self.message.player_summary(self.player_order)
         time.sleep(2)
-        self.message.game_progression_prompt(self.player.name)
+        self.message.game_progression_prompt()
         self._theflop()
 
 
@@ -212,7 +212,7 @@ class Game:
         time.sleep(2)
         self.message.game_summary(self.pot, self.dealer.hand)
         time.sleep(2)
-        self.message.game_progression_prompt(self.player.name)
+        self.message.game_progression_prompt()
         self._process_betting()
 
 
