@@ -1,6 +1,6 @@
 from collections import Counter
 
-from poker.utils.constants import INCREMENT_LIMIT, SINGLE_CHIP, DOUBLE, Chip, Cash
+from poker.utils.constants import INCREMENT_LIMIT, SINGLE_CHIP, Chip, Cash
 from poker.utils.exception import IncrementException, CashException
 
 

@@ -94,7 +94,7 @@ class Game:
 
 
     def _preflop(self) -> None:
-        print("Shuffling Deck...")
+        print("\nShuffling Deck...")
         self.dealer.shuffle_deck()
         time.sleep(1)
         for card_number in range(1, 3):
@@ -110,6 +110,7 @@ class Game:
 
 
     def _blind(self) -> None:
+        print("\nProcessing Big and Small Blinds...")
         for player_id, player in self.player_order.items():
             self.action.person = player.get("player")
             if player_id == 1:
@@ -123,32 +124,34 @@ class Game:
         self._theflop()
 
 
-    def _action(self) -> tuple:
+    def _action(self) -> dict:
+        print("\nProcessing betting...")
         action_log = {}
         raise_amount = 0
         has_raise = False
+        time.sleep(2)
         for order, player in self.player_order.items():
             player = player.get("player")
 
             if player.kind == "Computer":
                 player_action = player.select_action(raise_amount)
             else:
-
-                player_action = self.message.action(player.name, has_raise, raise_amount)
+                player_action = self.message.action(has_raise, raise_amount)
                 if player_action == self.action.CALL:
-                    call_amount = player.process_action(raise_amount)
-                    action_log[order] = {player_action: call_amount}
-                    self.pot.increment(Chip.WHITE.name, call_amount)  
+                    raise_amount = player.process_action(raise_amount)
+                    action_log[order] = {player_action: raise_amount}
+                    self.pot.increment(Chip.WHITE.name, raise_amount)  
+                    self.message.action_taken(player.name, player_action, raise_amount, [self.action.RAISE, self.action.CALL])
+                    time.sleep(2) 
+                    continue
             
                 if player_action == self.action.RAISE:
-                    raise_amount = self.message.increase(player.name)
+                    raise_amount = self.message.increase()
 
-            if player_action == self.action.FOLD:
+            if player_action in [self.action.FOLD, self.action.CHECK]:
                 action_log[order] = player_action
-                continue
-
-            if player_action == self.action.CHECK:
-                action_log[order] = player_action
+                self.message.action_taken(player.name, player_action, raise_amount, [self.action.RAISE, self.action.CALL])
+                time.sleep(2) 
                 continue
 
             if player_action == self.action.RAISE:
@@ -158,9 +161,12 @@ class Game:
                 self.pot.increment(Chip.WHITE.name, raise_amount)
 
             if player_action == self.action.CALL:
-                call_amount = player.process_action(raise_amount)
-                action_log[order] = {player_action: call_amount}
-                self.pot.increment(Chip.WHITE.name, call_amount)             
+                raise_amount = player.process_action(raise_amount)
+                action_log[order] = {player_action: raise_amount}
+                self.pot.increment(Chip.WHITE.name, raise_amount)     
+
+            self.message.action_taken(player.name, player_action, raise_amount, [self.action.RAISE, self.action.CALL])
+            time.sleep(2)     
 
         return action_log
 
@@ -182,20 +188,23 @@ class Game:
                 player = self.player_order[player_id].get("player")
                 if player.kind == "Computer":
                     player_action = player.select_action(call_amount)
-                    if player_action == "fold":
+                    if player_action == self.action.FOLD:
                         log[player_id] = player_action
-                    if player_action == "call":
+                    if player_action == self.action.CALL:
                         call_amount = player.process_action(call_amount)
                         log[player_id] = {player_action: call_amount}
                         self.pot.increment(Chip.WHITE.name, call_amount)
                 else:
-                    player_action = self.message.action(player.name, True, call_amount)
-                    if player_action == "fold":
+                    player_action = self.message.action(True, call_amount)
+                    if player_action == self.action.FOLD:
                         log[player_id] = player_action
-                    if player_action == "call":
+                    if player_action == self.action.CALL:
                         call_amount = player.process_action(call_amount)
                         log[player_id] = {player_action: call_amount}
                         self.pot.increment(Chip.WHITE.name, call_amount)
+
+                self.message.action_taken(player.name, player_action, call_amount, [self.action.call])
+                time.sleep(2)  
 
 
     def _remove_fold_players(self, log: dict) -> None:
@@ -205,41 +214,49 @@ class Game:
             
 
     def _theflop(self) -> None:
-        print("Here comes the flop...")
+        print("\nHere comes the flop...")
         self.dealer.deck.cards.pop()
         for _ in range(1, 4):
             self.dealer.deal_card(self.dealer)
-        time.sleep(2)
+        time.sleep(3)
         self.message.game_summary(self.pot, self.dealer.hand)
-        time.sleep(2)
+        time.sleep(3)
         self.message.game_progression_prompt()
         self._process_betting()
+        self._theturn()
 
 
     def _process_betting(self) -> None:
         action_log = self._action()
         self._process_checks_to_calls(action_log)
         self._remove_fold_players(action_log)
-        self._theturn()
 
 
     def _theturn(self) -> None:
-        print("Here comes the turn...")
+        print("\nHere comes the turn...")
         self.dealer.deck.cards.pop()
         self.dealer.deal_card(self.dealer)
-        action_log = self._action()
-        self._process_checks_to_calls(action_log)
-        self._remove_fold_players(action_log)
+        time.sleep(3)
+        self.message.game_summary(self.pot, self.dealer.hand)
+        time.sleep(3)
+        self.message.player_summary(self.player_order)
+        time.sleep(3)
+        self.message.game_progression_prompt()
+        self._process_betting()
         self._theriver()
 
 
     def _theriver(self) -> None:
-        print("Here comes the river...")
+        print("\nHere comes the river...")
         self.dealer.deck.cards.pop()
         self.dealer.deal_card(self.dealer)
-        action_log = self._action()
-        self._process_checks_to_calls(action_log)
-        self._remove_fold_players(action_log)
+        time.sleep(3)
+        self.message.game_summary(self.pot, self.dealer.hand)
+        time.sleep(3)
+        self.message.player_summary(self.player_order)
+        time.sleep(3)
+        self.message.game_progression_prompt()
+        self._process_betting()
         self._showdown()
 
 

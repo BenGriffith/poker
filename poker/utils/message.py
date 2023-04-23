@@ -54,6 +54,10 @@ class GameMessage:
             player_response = input(f"What would you like to do? [{Action.CHECK}, {Action.RAISE} or {Action.FOLD}] ")
         return player_response
     
+
+    def action_taken(self, name: str, action: str, amount: int, possible_actions: list[str] = []) -> None:
+        print(f"{name} decided to {action} {amount if action in possible_actions else ''}") 
+    
     
     def increase(self) -> int:
         player_response = int(input(f"How much would you like to raise? "))
@@ -68,10 +72,6 @@ class GameMessage:
         player_table.add_column(PlayerTable.BLIND.value)
         player_table.add_column(PlayerTable.HAND.value)
         for player_id, player in players.items():
-
-            
-
-
             player = player.get("player")
             player_table.add_row(
                 str(player_id), 
