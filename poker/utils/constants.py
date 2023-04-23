@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-SUITS = ["hearts", "diamonds", "spades", "clubs"]
+SUITS = "Hearts Diamonds Spades Clubs".split()
 FACE_CARDS = "J Q K A".split()
 NUMBER_CARDS = list(range(2, 11))
 INCREMENT_LIMIT = 100
@@ -44,10 +44,4 @@ class PlayerTable(Enum):
     NAME = "Name"
     CHIPS = "Chips"
     BLIND = "Blind"
-
-
-class GameTable(Enum):
-    POT = "Pot"
-    CHIP = "Chip"
-    COUNT = "Chip Count"
-    COMMUNITY = "Community Cards"
+    HAND = "Hand"

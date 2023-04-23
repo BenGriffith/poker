@@ -2,8 +2,11 @@ import time
 
 from rich.table import Table
 from rich.console import Console
+from rich.columns import Columns
+from rich.panel import Panel
 
-from poker.utils.constants import Decision, Cash, COMPETITION, Chip, PlayerTable, GameTable
+
+from poker.utils.constants import Decision, Cash, COMPETITION, Chip, PlayerTable, PLAYER_NAME
 from poker.utils.exception import RangeException, CashException, GamePlayException
 from poker.utils.chip import GameStack
 from poker.utils.action import Action
@@ -38,7 +41,7 @@ class GameMessage:
 
 
     def competition_cash(self) -> int:
-        cash = int(input(f"How much cash should each player get? {self.cash_options} "))
+        cash = int(input(f"How much money should each player get? {self.cash_options[-2::]} "))
         if cash not in self.cash_options:
             raise CashException
         return cash
@@ -46,9 +49,9 @@ class GameMessage:
     
     def action(self, has_raise: bool, raise_amount: int) -> str:
         if has_raise:
-            player_response = input(f"Another player raised the bet by {raise_amount}, what would you like to do? [{Action.CALL} or {Action.FOLD}]")
+            player_response = input(f"The bet was raised by {raise_amount}, what would you like to do? [{Action.CALL} or {Action.FOLD}] ")
         else:
-            player_response = input(f"What would you like to do? [{Action.CHECK}, {Action.RAISE} or {Action.FOLD}]")
+            player_response = input(f"What would you like to do? [{Action.CHECK}, {Action.RAISE} or {Action.FOLD}] ")
         return player_response
     
     
@@ -63,13 +66,19 @@ class GameMessage:
         player_table.add_column(PlayerTable.NAME.value)
         player_table.add_column(PlayerTable.CHIPS.value)
         player_table.add_column(PlayerTable.BLIND.value)
+        player_table.add_column(PlayerTable.HAND.value)
         for player_id, player in players.items():
+
+            
+
+
             player = player.get("player")
             player_table.add_row(
                 str(player_id), 
                 player.name, 
                 f"{Chip.WHITE.name}: {player.stack.chips[Chip.WHITE.name]}",
-                "Big" if player_id == 1 else "Small"
+                "Big" if player_id == 1 else "Small",
+                " ".join(f"{card}" for card in player.hand) if player.name == PLAYER_NAME else "Hidden" 
                 )
         console = Console()
         console.print("", player_table)
@@ -92,17 +101,7 @@ class GameMessage:
     
 
     def game_summary(self, pot: GameStack, community_cards: list) -> None:
-        game_pot_table = Table(title=GameTable.POT.value)
-        game_pot_table.add_column(GameTable.CHIP.value)
-        game_pot_table.add_column(GameTable.COUNT.value)
-        for chip, chip_count in pot.chips.items():
-            game_pot_table.add_row(chip, str(chip_count))
-
-        game_cards_table = Table(title=GameTable.COMMUNITY.value)
-        game_cards_table.add_column(GameTable.COMMUNITY.value.split(" ")[1])
-        for num, card in enumerate(community_cards, start=1):
-            game_cards_table.add_row(f"{str(num)}: {card}")
-
+        game_pot = [Panel(f"Game Pot\n{key}: {value}") for key, value in pot.chips.items()]
+        game_pot.extend(Panel(f"Card {card_number + 1}\n{community_cards[card_number]}") for card_number in range(len(community_cards)))
         console = Console()
-        console.print("", game_pot_table)
-        console.print("", game_cards_table)
+        console.print(Columns(game_pot))
