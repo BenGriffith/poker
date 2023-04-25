@@ -11,11 +11,11 @@ class PlayerStack:
     
     def increment(self, cash: int) -> None:
         if cash > INCREMENT_LIMIT:
-            raise IncrementException()
+            raise IncrementException
         
         chip_values = [item.value for item in Cash]
         if cash not in chip_values:
-            raise CashException()
+            raise CashException
         
         if cash == Cash.FIVE.value:
             self.chips[Chip.WHITE.name] += SINGLE_CHIP * Cash.FIVE.value

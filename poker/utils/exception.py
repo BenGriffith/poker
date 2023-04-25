@@ -34,3 +34,11 @@ class GamePlayException(BaseException):
     def __init__(self):
         self.message = f"Please enter 'Yes' or 'No'"
         super().__init__(self.message)
+
+
+class NotReadyException(BaseException):
+    pass
+
+
+class InvalidActionException(BaseException):
+    pass
