@@ -1,6 +1,8 @@
 import random
 import logging
 import time
+from itertools import combinations
+from collections import Counter
 
 from faker import Faker
 
@@ -8,8 +10,8 @@ from poker.utils.player import Dealer, Player, Computer
 from poker.utils.action import Action
 from poker.utils.chip import GameStack
 from poker.utils.message import GameMessage
-from poker.utils.constants import Blind, Chip, PLAYER_NAME
-from poker.utils.exception import RangeException, CashException
+from poker.utils.constants import Blind, Chip, PLAYER_NAME, FaceCards
+from poker.utils.exception import RangeException, CashException, InvalidActionException
     
 
 class Game:
@@ -29,12 +31,12 @@ class Game:
                 start_game = self.message.play()
                 if start_game:
                     self.player.name = PLAYER_NAME
-                    self.player.cash = self._setup_player_cash()
+                    self._setup_player_cash()
                     breakpoint()
                 else:
                     break
             except:
-                pass # setup logger
+                raise # setup logger
                 break
 
 
@@ -124,6 +126,14 @@ class Game:
         self._theflop()
 
 
+    def _select_player_action(self, has_raise: bool, raise_amount: int) -> str:
+        try:
+            player_action = self.message.action(has_raise, raise_amount)
+        except InvalidActionException:
+            player_action = self._select_player_action(has_raise, raise_amount)
+        return player_action
+
+
     def _action(self) -> dict:
         print("\nProcessing betting...")
         action_log = {}
@@ -136,7 +146,7 @@ class Game:
             if player.kind == "Computer":
                 player_action = player.select_action(raise_amount)
             else:
-                player_action = self.message.action(has_raise, raise_amount)
+                player_action = self._select_player_action(has_raise, raise_amount)
                 if player_action == self.action.CALL:
                     raise_amount = player.process_action(raise_amount)
                     action_log[order] = {player_action: raise_amount}
@@ -171,39 +181,46 @@ class Game:
         return action_log
 
 
-    def _process_checks_to_calls(self, log: dict) -> None:
+    def _call_amount(self, log: dict) -> int:
         call_amount = 0
-        players_with_check_action = []
-        for order, action in log.items():
-            if action == "check":
-                players_with_check_action.append(order)
-        for order, action in log.items():
+        for action in log.values():
             if isinstance(action, dict):
                 call_amount = [value for value in action.values()][0]
                 break
+        return call_amount
+
+
+    def _players_with_check(self, log: dict) -> list:
+        players_with_check = []
+        for order, action in log.items():
+            if action == self.action.CHECK:
+                players_with_check.append(order)
+        return players_with_check
+
+
+    def _process_player_checks_to_calls(self, player_id: int, player: Player, call_amount: int, log: dict) -> tuple:
+        if player.kind == "Computer":
+            player_action = player.select_action(call_amount)
+        if player.kind == "Player":
+            player_action = self._select_player_action(True, call_amount)
+        if player_action == self.action.FOLD:
+            log[player_id] = player_action
+        if player_action == self.action.CALL:
+            call_amount = player.process_action(call_amount)
+            log[player_id] = {player_action: call_amount}
+            self.pot.increment(Chip.WHITE.name, call_amount)
+        return (player_action, log)
+
+
+    def _process_checks_to_calls(self, log: dict) -> None:
+        call_amount = self._call_amount(log)
+        players_with_check = self._players_with_check(log)
 
         if call_amount > 0:
-            for player_id in players_with_check_action:
-
+            for player_id in players_with_check:
                 player = self.player_order[player_id].get("player")
-                if player.kind == "Computer":
-                    player_action = player.select_action(call_amount)
-                    if player_action == self.action.FOLD:
-                        log[player_id] = player_action
-                    if player_action == self.action.CALL:
-                        call_amount = player.process_action(call_amount)
-                        log[player_id] = {player_action: call_amount}
-                        self.pot.increment(Chip.WHITE.name, call_amount)
-                else:
-                    player_action = self.message.action(True, call_amount)
-                    if player_action == self.action.FOLD:
-                        log[player_id] = player_action
-                    if player_action == self.action.CALL:
-                        call_amount = player.process_action(call_amount)
-                        log[player_id] = {player_action: call_amount}
-                        self.pot.increment(Chip.WHITE.name, call_amount)
-
-                self.message.action_taken(player.name, player_action, call_amount, [self.action.call])
+                player_action, log = self._process_player_checks_to_calls(player_id, player, call_amount, log)
+                self.message.action_taken(player.name, player_action, call_amount, [self.action.CALL])
                 time.sleep(2)  
 
 
@@ -261,5 +278,88 @@ class Game:
 
 
     def _showdown(self) -> None:
+        for player in self.player_order.values():
+            player = player.get("player")
+            self._process_player_hands(player)
+    
+    
+    def _process_player_hands(self, person):
+        """
+        poker_hands
+        create hand combinations between player hand and community hand
+        compare against poker hands 
+        fetch best hand
+        compare against other poker players
+
+        functions to evaluate whether any of the following apply, if they do where are they stored
+        three of a kind
+        two pair
+        one pair
+        high card
+
+        """
+
+
+
+
+        player_best_hand = person.hand.copy()
+        player_best_hand.extend(self.dealer.hand)
+        player_hand_combinations = list(combinations(player_best_hand, 5))
+        for hand in player_hand_combinations:
+            hand = self._process_player_hand(hand)
+            self._process_best_hand(hand, person)
         breakpoint()
-        pass # declare winner
+
+        
+
+    def _process_best_hand(self, hand: Counter, person) -> None:
+        if hand.most_common()[0][1] == 3:
+            if person.best_hand:
+                if int(person.best_hand["best_hand"][0]) < int(hand.most_common()[0][0]):
+                    person.best_hand = {"hand": hand, "best_hand": hand.most_common()[0]}
+            else:
+                person.best_hand = {"hand": hand, "best_hand": hand.most_common()[0]}
+        
+
+
+        elif hand.most_common()[0][1] == 2 and hand.most_common()[1][1] == 2:
+            if person.best_hand:
+                old_hand = [int(pair[0]) for pair in person.best_hand["best_hand"]]
+                new_hand = [int(pair[0]) for pair in hand.most_common()[:2]]
+                old_hand.sort()
+                new_hand.sort()
+                new_count = 0
+                for new, old in list(zip(new_hand, old_hand)):
+                    if new > old:
+                        new_count += 1
+                if new_count == 2:
+                    person.best_hand = {"hand": hand, "best_hand": hand.most_common()[:2]}
+            else:
+                person.best_hand = {"hand": hand, "best_hand": hand.most_common()[:2]}
+        
+
+
+        elif hand.most_common()[0][1] == 2:
+            if person.best_hand:
+                if int(person.best_hand["best_hand"][0]) < int(hand.most_common()[0][0]):
+                    person.best_hand = {"hand": hand, "best_hand": hand.most_common()[0]}
+            else:
+                person.best_hand = {"hand": hand, "best_hand": hand.most_common()[0]}
+        
+        else:
+            if person.best_hand:
+                if int(person.best_hand["best_hand"][0]) < int(hand.most_common()[0][0]):
+                    person.best_hand = {"hand": hand, "best_hand": hand.most_common()[0]}
+            else:
+                person.best_hand = {"hand": hand, "best_hand": hand.most_common()[0]}
+
+
+    def _process_player_hand(self, hand: tuple) -> Counter:
+        counter = Counter()
+        for card in hand:
+            counter.update(str(card.rank) if isinstance(card.rank, int) else [str(card.value())])
+        return counter
+        
+
+
+
