@@ -13,6 +13,7 @@ class Player:
         self.hand: list[Card] = []
         self.stack = PlayerStack()
         self.kind = self.__class__.__name__
+        self.best_hand = {}
 
     def buy_chips(self, value: int) -> None:
         self.stack.increment(value)

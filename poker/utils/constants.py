@@ -2,13 +2,19 @@ from enum import Enum
 
 
 SUITS = "Hearts Diamonds Spades Clubs".split()
-FACE_CARDS = "J Q K A".split()
 NUMBER_CARDS = list(range(2, 11))
 INCREMENT_LIMIT = 100
 SINGLE_CHIP = 1
 DOUBLE = 2
 COMPETITION = (list(range(1, 5)))
 PLAYER_NAME = "You"
+
+
+class FaceCards(Enum):
+    J = 11
+    Q = 12
+    K = 13
+    A = 14
 
 
 class Chip(Enum):

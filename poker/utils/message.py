@@ -7,7 +7,7 @@ from rich.panel import Panel
 
 
 from poker.utils.constants import Decision, Cash, COMPETITION, Chip, PlayerTable, PLAYER_NAME
-from poker.utils.exception import RangeException, CashException, GamePlayException
+from poker.utils.exception import RangeException, CashException, GamePlayException, NotReadyException, InvalidActionException
 from poker.utils.chip import GameStack
 from poker.utils.action import Action
 
@@ -50,9 +50,14 @@ class GameMessage:
     def action(self, has_raise: bool, raise_amount: int) -> str:
         if has_raise:
             player_response = input(f"The bet was raised by {raise_amount}, what would you like to do? [{Action.CALL} or {Action.FOLD}] ")
+            if player_response not in [Action.CALL, Action.FOLD]:
+                raise InvalidActionException
         else:
             player_response = input(f"What would you like to do? [{Action.CHECK}, {Action.RAISE} or {Action.FOLD}] ")
+            if player_response not in [Action.CHECK, Action.RAISE, Action.FOLD]:
+                raise InvalidActionException
         return player_response
+
     
 
     def action_taken(self, name: str, action: str, amount: int, possible_actions: list[str] = []) -> None:
@@ -93,11 +98,13 @@ class GameMessage:
             if player_response not in self.decision:
                 raise GamePlayException
             if player_response in [Decision.N.value, Decision.NO.value]:
-                time.sleep(5)
-                self.game_progression_prompt(True)
+                raise NotReadyException
         except GamePlayException:
             time.sleep(5)
             self.game_progression_prompt()
+        except NotReadyException:
+            time.sleep(5)
+            self.game_progression_prompt(True)
     
 
     def game_summary(self, pot: GameStack, community_cards: list) -> None:
