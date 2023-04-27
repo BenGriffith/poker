@@ -7,7 +7,7 @@ from rich.panel import Panel
 
 
 from poker.utils.constants import Decision, Cash, COMPETITION, Chip, PlayerTable, PLAYER_NAME
-from poker.utils.exception import RangeException, CashException, GamePlayException, NotReadyException, InvalidActionException
+from poker.utils.exception import RangeException, CashException, GamePlayException, NotReadyException, InvalidActionException, NegativeException
 from poker.utils.chip import GameStack
 from poker.utils.action import Action
 
@@ -66,6 +66,8 @@ class GameMessage:
     
     def increase(self) -> int:
         player_response = int(input(f"How much would you like to raise? "))
+        if player_response < 0:
+            raise NegativeException
         return player_response
     
 
