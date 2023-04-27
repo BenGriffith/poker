@@ -29,24 +29,16 @@ class PlayerStack:
             self.chips[Chip.WHITE.name] += SINGLE_CHIP * Cash.FIFTY.value
         else:
             self.chips[Chip.WHITE.name] += SINGLE_CHIP * Cash.HUNDRED.value
-
     
     def decrement(self, chip: str, value: int) -> None:
         self.chips[chip] -= value
-
-    def redeem(self):
-        """
-        Exchange higher value chips for lower value chips
-        """
-        pass
-
+    
     def chip_count(self) -> tuple:
         return (
             self.chips[Chip.WHITE.name],
             self.chips[Chip.RED.name],
             self.chips[Chip.BLUE.name],
             )
-
 
     def cash_equivalent(self):
         white = self.chips[Chip.WHITE.name] * Chip.WHITE.value
