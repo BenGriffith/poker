@@ -6,8 +6,20 @@ from rich.columns import Columns
 from rich.panel import Panel
 
 
-from poker.utils.constants import Decision, Cash, COMPETITION, Chip, PlayerTable, PLAYER_NAME
-from poker.utils.exception import RangeException, CashException, GamePlayException, NotReadyException, InvalidActionException, NegativeException
+from poker.utils.constants import (
+    Decision, 
+    Cash, 
+    COMPETITION, 
+    PLAYER_NAME
+)
+from poker.utils.exception import (
+    RangeException, 
+    CashException, 
+    GamePlayException, 
+    NotReadyException, 
+    InvalidActionException, 
+    NegativeException
+)
 from poker.utils.chip import GameStack
 from poker.utils.action import Action
 
@@ -18,13 +30,11 @@ class GameMessage:
         self.cash_options = [item.value for item in Cash]
         self.decision = [item.value for item in Decision]
 
-
     def play(self) -> bool:
         player_response = input("Welcome to Texas hold'em! Would you like to play a game? [yes/no] ").lower()
         if player_response in [Decision.Y.value, Decision.YES.value]:
             return True
-        return False
-    
+        return False    
     
     def starting_cash(self) -> int:
         player_response = int(input(f"How much money would you like to start off with? {self.cash_options} "))
@@ -32,20 +42,17 @@ class GameMessage:
             raise CashException
         return player_response
     
-    
     def competition_count(self) -> int:
         count = int(input(f"How many players would you like to play against? {COMPETITION} "))
         if count not in COMPETITION:
             raise RangeException
         return count
 
-
     def competition_cash(self) -> int:
         cash = int(input(f"How much money should each player get? {self.cash_options[-2::]} "))
         if cash not in self.cash_options:
             raise CashException
         return cash
-    
     
     def action(self, has_raise: bool, raise_amount: int) -> str:
         if has_raise:
@@ -58,11 +65,8 @@ class GameMessage:
                 raise InvalidActionException
         return player_response
 
-    
-
     def action_taken(self, name: str, action: str, amount: int, possible_actions: list[str] = []) -> None:
         print(f"{name} decided to {action} {amount if action in possible_actions else ''}") 
-    
     
     def increase(self) -> int:
         player_response = int(input(f"How much would you like to raise? "))
@@ -70,20 +74,19 @@ class GameMessage:
             raise NegativeException
         return player_response
     
-
     def player_summary(self, players: dict) -> None:
-        player_table = Table(title=PlayerTable.TITLE.value)
-        player_table.add_column(PlayerTable.ORDER.value)
-        player_table.add_column(PlayerTable.NAME.value)
-        player_table.add_column(PlayerTable.CHIPS.value)
-        player_table.add_column(PlayerTable.BLIND.value)
-        player_table.add_column(PlayerTable.HAND.value)
+        player_table = Table(title="Player Summery")
+        player_table.add_column("Order")
+        player_table.add_column("Name")
+        player_table.add_column("Chips")
+        player_table.add_column("Blind")
+        player_table.add_column("Hand")
         for player_id, player in players.items():
-            player = player.get("player")
+            player = player["player"]
             player_table.add_row(
                 str(player_id), 
                 player.name, 
-                f"{Chip.WHITE.name}: {player.stack.chips[Chip.WHITE.name]}",
+                f"{GameStack.WHITE['name']}: {player.stack.chips[GameStack.WHITE['name']]}",
                 "Big" if player_id == 1 else "Small",
                 " ".join(f"{card}" for card in player.hand) if player.name == PLAYER_NAME else "Hidden" 
                 )
@@ -91,9 +94,9 @@ class GameMessage:
         console.print("", player_table)
     
 
-    def game_progression_prompt(self, not_ready: bool = None) -> None:
+    def game_progression_prompt(self, progress: bool = None) -> None:
         try:
-            if not_ready:
+            if progress:
                 player_response = input(f"How about now, are you ready? [yes/no] ")
             else:
                 player_response = input(f"Are you ready to continue? [yes/no] ")
@@ -106,7 +109,7 @@ class GameMessage:
             self.game_progression_prompt()
         except NotReadyException:
             time.sleep(5)
-            self.game_progression_prompt(True)
+            self.game_progression_prompt(progress=True)
     
 
     def game_summary(self, pot: GameStack, community_cards: list) -> None:

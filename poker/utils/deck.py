@@ -13,4 +13,4 @@ class Deck:
         for suit in SUITS:
             _suits = [suit for _ in range(len(_cards))]
             for _suit, _card in zip(_suits, _cards):
-                self.cards.append(Card(_suit, _card))
+                self.cards.append(Card(suit=_suit, rank=_card))

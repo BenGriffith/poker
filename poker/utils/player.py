@@ -2,10 +2,13 @@ import random
 
 from poker.utils.chip import PlayerStack
 from poker.utils.deck import Deck, Card
-from poker.utils.constants import Chip
+from poker.utils.action import Action
 
 
 class Player:
+
+    PLAYER = "Player"
+    COMPUTER = "Computer"
 
     def __init__(self, name: str = None, cash: int = 0) -> None:
         self.name = name
@@ -16,17 +19,17 @@ class Player:
         self.best_hand = {}
 
     def buy_chips(self, value: int) -> None:
-        self.stack.increment(value)
+        self.stack.increment(cash=value)
         self.cash -= value
 
     def process_action(self, raise_amount: int) -> int:
         if raise_amount == 0:
             # bet
-            self.stack.decrement(Chip.WHITE.name, raise_amount)
+            self.stack.decrement(chip=self.stack.WHITE.get("name"), value=raise_amount)
             return raise_amount
         else: 
             # match bet or call
-            self.stack.decrement(Chip.WHITE.name, raise_amount)
+            self.stack.decrement(chip=self.stack.WHITE.get("name"), value=raise_amount)
             return raise_amount
 
 
@@ -37,12 +40,12 @@ class Computer(Player):
 
     def select_action(self, raise_amount: int) -> str:
         if raise_amount == 0:
-            return random.choice(["check", "raise"])
+            return random.choice([Action.CHECK, Action.RAISE])
         else:
             if raise_amount <= self.stack.cash_equivalent():
-                return "call"
+                return Action.CALL
             else:
-                return "fold"
+                return Action.FOLD
                 
 
     def process_action(self, raise_amount: int) -> int:
@@ -51,11 +54,11 @@ class Computer(Player):
             # random bet or bet
             white_third = white // 3
             white_chips = random.randint(1, white_third)
-            self.stack.decrement(Chip.WHITE.name, white_chips)
+            self.stack.decrement(chip=self.stack.WHITE.get("name"), value=white_chips)
             return white_chips
         else: 
             # match bet or call
-            self.stack.decrement(Chip.WHITE.name, raise_amount)
+            self.stack.decrement(chip=self.stack.WHITE.get("name"), value=raise_amount)
             return raise_amount
             
 

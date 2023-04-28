@@ -17,12 +17,6 @@ class FaceCards(Enum):
     A = 14
 
 
-class Chip(Enum):
-    WHITE = 1
-    RED = 5
-    BLUE = 10
-
-
 class Cash(Enum):
     FIVE = 5
     TEN = 10
@@ -42,12 +36,3 @@ class Decision(Enum):
     NO = "no"
     Y = "y"
     N = "n"
-
-
-class PlayerTable(Enum):
-    TITLE = "Player Summary"
-    ORDER = "Order"
-    NAME = "Name"
-    CHIPS = "Chips"
-    BLIND = "Blind"
-    HAND = "Hand"
