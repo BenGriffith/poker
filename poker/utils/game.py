@@ -291,7 +291,9 @@ class Game:
         for player in self.player_order.values():
             player = player["player"]
             self._process_player_hands(person=player)
-        self._compare_player_hands()
+        winner = self._compare_player_hands()
+        self.message.showdown(winner=winner, pot=self.pot, players=self.player_order)
+        
     
     def _process_player_hands(self, person: Union[Player, Computer]) -> None:
         player_best_hand = person.hand.copy()
@@ -343,11 +345,14 @@ class Game:
         if isinstance(person.best_hand, list):
             old_hand = sorted([pair[0] for pair in person.best_hand["best_hand"]])
             new_hand = sorted([pair[0] for pair in hand.most_common()[:2]])
-            new_count = 0
+            greater_count = 0
+            equal_count = 0
             for new, old in list(zip(new_hand, old_hand)):
                 if new > old:
-                    new_count += 1
-            if new_count == 2:
+                    greater_count += 1
+                if new == old:
+                    equal_count += 1
+            if greater_count == 2 or (greater_count == 1 and equal_count == 1):
                 person.best_hand = {"hand": hand, "best_hand": hand.most_common()[:2]}
         else:
             person.best_hand = {"hand": hand, "best_hand": hand.most_common()[:2]}
@@ -373,20 +378,9 @@ class Game:
         else:
             person.best_hand = {"hand": hand, "best_hand": top_card[0]}
 
-    def _compare_player_hands(self):
+    def _compare_player_hands(self) -> dict:
         """
-        three of a kind
-        two pair
-        one pair
-        high card
 
-        compare each player hand
-        if no best hand then first hand is best hand
-        after that each best hand is compared
-        once best hand has been decided then
-        congratulations message
-        pot goes to player who won
-        asked if want to play a new game
         """
         winner = defaultdict(str)
         for player_id, player in self.player_order.items():
@@ -412,6 +406,7 @@ class Game:
                 if isinstance(winner["hand"], list) and isinstance(player.best_hand["best_hand"], list):
                     previous_hand = sorted([pair[0] for pair in winner["hand"]])
                     current_hand = sorted([pair[0] for pair in player.best_hand["best_hand"]])
+
                     current_count = 0
                     for previous, current in list(zip(previous_hand, current_hand)):
                         if current > previous:
@@ -451,6 +446,5 @@ class Game:
             else:
                 winner["name"] = player.name
                 winner["hand"] = player.best_hand["best_hand"]
-        breakpoint()
-        print(f"Congratulations! {winner['name']} won!")
 
+        return winner

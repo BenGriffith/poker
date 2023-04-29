@@ -57,4 +57,4 @@ class GameStack(PlayerStack):
         PlayerStack.__init__(self)
 
     def increment(self, chip: str, quantity: int) -> None:
-        self.chips[chip] += quantity        
+        self.chips[chip] += quantity   

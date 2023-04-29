@@ -93,7 +93,6 @@ class GameMessage:
         console = Console()
         console.print("", player_table)
     
-
     def game_progression_prompt(self, progress: bool = None) -> None:
         try:
             if progress:
@@ -109,11 +108,17 @@ class GameMessage:
             self.game_progression_prompt()
         except NotReadyException:
             time.sleep(5)
-            self.game_progression_prompt(progress=True)
-    
+            self.game_progression_prompt(progress=True)    
 
     def game_summary(self, pot: GameStack, community_cards: list) -> None:
         game_pot = [Panel(f"Game Pot\n{key}: {value}") for key, value in pot.chips.items()]
         game_pot.extend(Panel(f"Card {card_number + 1}\n{community_cards[card_number]}") for card_number in range(len(community_cards)))
         console = Console()
         console.print(Columns(game_pot))
+
+    def showdown(self, winner: dict, pot: GameStack, players: dict) -> None:
+        time.sleep(3)
+        print(f"\nCongratulations {winner['name']}! You won ${pot.cash_equivalent()}!")
+        for player in players.values():
+            player = player["player"]
+            print(f"{player.name}: {player.best_hand['best_hand']}")
