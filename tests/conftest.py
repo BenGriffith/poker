@@ -3,6 +3,8 @@ import pytest
 from poker.utils.card import Card
 from poker.utils.deck import Deck
 from poker.utils.chip import PlayerStack, GameStack
+from poker.utils.action import Action
+from poker.utils.player import Player
 from poker.utils.constants import Cash
 
 
@@ -42,3 +44,15 @@ def fifty_chips(player_stack, cash):
     player_stack.increment(cash.FIFTEEN.value)
     player_stack.increment(cash.TWENTY.value)
     player_stack.increment(cash.FIVE.value)
+
+@pytest.fixture
+def player(card_number, card_face):
+    player = Player(name="Mills", cash=50)
+    player.buy_chips(player.cash)
+    player.hand.append(card_number)
+    player.hand.append(card_face)
+    return player
+
+@pytest.fixture
+def action(game_stack, player):
+    return Action(game_stack=game_stack, player=player)
