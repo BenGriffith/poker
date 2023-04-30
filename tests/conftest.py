@@ -69,3 +69,8 @@ def computer(card_number, card_face):
     computer = Computer(name="Andrea", cash=50)
     computer.hand.append(card_number)
     computer.hand.append(card_face)
+    return computer
+
+@pytest.fixture
+def dealer():
+    return Dealer()
