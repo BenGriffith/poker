@@ -7,8 +7,8 @@ from poker.utils.exception import IncrementException, CashException
 class PlayerStack:
 
     WHITE = {"name": "White", "value": 1}
-    BLUE = {"name": "Blue", "value": 5}
-    RED = {"name": "Red", "value": 10}
+    RED = {"name": "Red", "value": 5}
+    BLUE = {"name": "Blue", "value": 10}
 
     def __init__(self) -> None:
         self.chips = Counter()
