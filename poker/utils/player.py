@@ -22,15 +22,9 @@ class Player:
         self.stack.increment(cash=value)
         self.cash -= value
 
-    def process_action(self, raise_amount: int) -> int:
-        if raise_amount == 0:
-            # bet
-            self.stack.decrement(chip=self.stack.WHITE.get("name"), value=raise_amount)
-            return raise_amount
-        else: 
-            # match bet or call
-            self.stack.decrement(chip=self.stack.WHITE.get("name"), value=raise_amount)
-            return raise_amount
+    def process_bet(self, raise_amount: int) -> int:    
+        self.stack.decrement(chip=self.stack.WHITE.get("name"), value=raise_amount)
+        return raise_amount
 
 
 class Computer(Player):
@@ -48,7 +42,7 @@ class Computer(Player):
                 return Action.FOLD
                 
 
-    def process_action(self, raise_amount: int) -> int:
+    def process_bet(self, raise_amount: int) -> int:
         white, red, blue = self.stack.chip_count()
         if raise_amount == 0:
             # random bet or bet
