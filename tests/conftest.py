@@ -4,7 +4,7 @@ from poker.utils.card import Card
 from poker.utils.deck import Deck
 from poker.utils.chip import PlayerStack, GameStack
 from poker.utils.action import Action
-from poker.utils.player import Player
+from poker.utils.player import Player, Computer, Dealer
 from poker.utils.constants import Cash
 
 
@@ -56,3 +56,16 @@ def player(card_number, card_face):
 @pytest.fixture
 def action(game_stack, player):
     return Action(game_stack=game_stack, player=player)
+
+@pytest.fixture
+def player_two(card_number, card_face):
+    player = Player(name="Tim", cash=100)
+    player.hand.append(card_number)
+    player.hand.append(card_face)
+    return player
+
+@pytest.fixture
+def computer(card_number, card_face):
+    computer = Computer(name="Andrea", cash=50)
+    computer.hand.append(card_number)
+    computer.hand.append(card_face)
