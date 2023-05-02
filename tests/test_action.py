@@ -15,7 +15,7 @@ def test_action(action):
     assert action.person.name == "Mills"
     assert action.person.cash == 0
     assert action.person.stack.chips == {"White": 50}
-    assert len(action.person.hand) == 2
+    assert len(action.person.pocket_cards) == 2
 
 
 def test_bet(action):
@@ -26,7 +26,7 @@ def test_bet(action):
 
 def test_fold(action):
     action.fold()
-    assert action.person.hand == []
+    assert action.person.pocket_cards == []
 
 
 def test_blind(action):
