@@ -1,7 +1,5 @@
-from random import shuffle
-
 from poker.utils.card import Card
-from poker.utils.constants import SUITS, FACE_CARDS, NUMBER_CARDS
+from poker.utils.constants import SUITS, NUMBER_CARDS, FaceCards
 
 
 class Deck:
@@ -11,11 +9,8 @@ class Deck:
         self._create_deck()
 
     def _create_deck(self):
-        _cards = NUMBER_CARDS + FACE_CARDS
+        _cards = NUMBER_CARDS + [item.name for item in FaceCards]
         for suit in SUITS:
             _suits = [suit for _ in range(len(_cards))]
             for _suit, _card in zip(_suits, _cards):
-                self.cards.append(Card(_suit, _card))
-
-    def shuffle_deck(self):
-        shuffle(self.cards)
+                self.cards.append(Card(suit=_suit, rank=_card))

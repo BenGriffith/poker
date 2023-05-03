@@ -1,4 +1,10 @@
-from poker.utils.deck import Deck
+from poker.utils.game import Game
+from poker.utils.player import Player, Dealer
+from poker.utils.message import GameMessage
 
-if __name__ == "__main__":
-    deck = Deck()
+
+game_message = GameMessage()
+dealer = Dealer()
+player = Player()
+game = Game(game_message, dealer, player)
+game.start()

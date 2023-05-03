@@ -1,54 +1,53 @@
-from collections import defaultdict
+from collections import Counter
 
-from poker.utils.constants import INCREMENT_LIMIT, SINGLE_CHIP, DOUBLE, Chip, Cash
+from poker.utils.constants import INCREMENT_LIMIT, SINGLE_CHIP, Cash
 from poker.utils.exception import IncrementException, CashException
 
 
-class Stack:
+class PlayerStack:
+
+    WHITE = {"name": "White", "value": 1}
+    RED = {"name": "Red", "value": 5}
+    BLUE = {"name": "Blue", "value": 10}
 
     def __init__(self) -> None:
-        self.chips = defaultdict(int)
+        self.chips = Counter()
     
-    # increment chips
     def increment(self, cash: int) -> None:
         if cash > INCREMENT_LIMIT:
-            raise IncrementException()
+            raise IncrementException
         
         chip_values = [item.value for item in Cash]
         if cash not in chip_values:
-            raise CashException()
+            raise CashException
         
         if cash == Cash.FIVE.value:
-            self.chips[Chip.WHITE.name] += SINGLE_CHIP * Cash.FIVE.value
+            self.chips[self.WHITE["name"]] += SINGLE_CHIP * Cash.FIVE.value
         elif cash == Cash.TEN.value:
-            self.chips[Chip.WHITE.name] += SINGLE_CHIP * Cash.FIVE.value
-            self.chips[Chip.RED.name] += SINGLE_CHIP
+            self.chips[self.WHITE["name"]] += SINGLE_CHIP * Cash.TEN.value
         elif cash == Cash.FIFTEEN.value:
-            self.chips[Chip.RED.name] += SINGLE_CHIP
-            self.chips[Chip.BLUE.name] += SINGLE_CHIP
+            self.chips[self.WHITE["name"]] += SINGLE_CHIP * Cash.FIFTEEN.value
+        elif cash == Cash.TWENTY.value:
+            self.chips[self.WHITE["name"]] += SINGLE_CHIP * Cash.TWENTY.value
+        elif cash == Cash.FIFTY.value:
+            self.chips[self.WHITE["name"]] += SINGLE_CHIP * Cash.FIFTY.value
         else:
-            self.chips[Chip.RED.name] += SINGLE_CHIP * DOUBLE
-            self.chips[Chip.BLUE.name] += SINGLE_CHIP
+            self.chips[self.WHITE["name"]] += SINGLE_CHIP * Cash.HUNDRED.value
     
-    # decrement chips
     def decrement(self, chip: str, value: int) -> None:
         self.chips[chip] -= value
 
-    # redeem
-    def redeem(self):
-        pass
-
-    # count
-    def chip_count(self) -> tuple:
-        return (
-            self.chips[Chip.WHITE.name],
-            self.chips[Chip.RED.name],
-            self.chips[Chip.BLUE.name],
-            )
-
-    # cash
     def cash_equivalent(self):
-        WHITE = self.chips[Chip.WHITE.name] * Chip.WHITE.value
-        RED = self.chips[Chip.RED.name] * Chip.RED.value
-        BLUE = self.chips[Chip.BLUE.name] * Chip.BLUE.value
-        return WHITE + RED + BLUE
+        white = self.chips[self.WHITE["name"]] * self.WHITE["value"]
+        red = self.chips[self.RED["name"]] * self.RED["value"]
+        blue = self.chips[self.BLUE["name"]] * self.BLUE["value"]
+        return white + red + blue
+    
+
+class GameStack(PlayerStack):
+
+    def __init__(self) -> None:
+        PlayerStack.__init__(self)
+
+    def increment(self, chip: str, quantity: int) -> None:
+        self.chips[chip] += quantity   

@@ -3,68 +3,56 @@ import pytest
 from poker.utils.exception import IncrementException, CashException
 
 
-def test_increment_exception(stack):
-    #stack.increment(25)
+def test_increment_exception(player_stack):
     with pytest.raises(IncrementException):
-        stack.increment(25)
+        player_stack.increment(125)
 
 
-def test_cash_exception(stack):
+def test_cash_exception(player_stack):
     with pytest.raises(CashException):
-        stack.increment(4)
+        player_stack.increment(4)
 
 
-def test_stack_increment_five(stack, chip, cash):
-    stack.increment(cash.FIVE.value)
-    assert stack.chips[chip.WHITE.name] == 5
+def test_stack_increment_five(player_stack, cash):
+    player_stack.increment(cash.FIVE.value)
+    assert player_stack.chips[player_stack.WHITE["name"]] == 5
 
 
-def test_stack_increment_ten(stack, chip, cash):
-    stack.increment(cash.TEN.value)
-    assert stack.chips[chip.WHITE.name] == 5
-    assert stack.chips[chip.RED.name] == 1
+def test_stack_increment_ten(player_stack, cash):
+    player_stack.increment(cash.TEN.value)
+    assert player_stack.chips[player_stack.WHITE["name"]] == 10
 
 
-def test_stack_increment_fifteen(stack, chip, cash):
-    stack.increment(cash.FIFTEEN.value)
-    assert stack.chips[chip.RED.name] == 1
-    assert stack.chips[chip.BLUE.name] == 1
+def test_stack_increment_fifteen(player_stack, cash):
+    player_stack.increment(cash.FIFTEEN.value)
+    assert player_stack.chips[player_stack.WHITE["name"]] == 15
 
 
-def test_stack_increment_twenty(stack, chip, cash):
-    stack.increment(cash.TWENTY.value)
-    assert stack.chips[chip.RED.name] == 2
-    assert stack.chips[chip.BLUE.name] == 1
+def test_stack_increment_twenty(player_stack, cash):
+    player_stack.increment(cash.TWENTY.value)
+    assert player_stack.chips[player_stack.WHITE["name"]] == 20
 
 
-def test_stack_decrement(stack, chip, cash):
-    stack.increment(cash.FIVE.value)
-    stack.increment(cash.TWENTY.value)
+def test_stack_decrement(player_stack, cash):
+    player_stack.increment(cash.FIVE.value)
+    player_stack.increment(cash.TWENTY.value)
     
-    stack.decrement(chip.WHITE.name, 3)
-    assert stack.chips[chip.WHITE.name] == 2
-
-    stack.decrement(chip.RED.name, 1)
-    stack.decrement(chip.BLUE.name, 1)
-    assert stack.chips[chip.RED.name] == 1
-    assert stack.chips[chip.BLUE.name] == 0
+    player_stack.decrement(player_stack.WHITE["name"], 3)
+    assert player_stack.chips[player_stack.WHITE["name"]] == 22
 
 
-def test_chip_count(stack, cash):
-    stack.increment(cash.FIVE.value)
-    stack.increment(cash.FIVE.value)
-    stack.increment(cash.TWENTY.value)
-    assert stack.chip_count() == (10, 2, 1) # WHITE: 10, RED: 2, BLUE: 1
+def test_cash_equivalent(fifty_chips, player_stack):
+    fifty_chips
+    assert player_stack.chips[player_stack.WHITE["name"]] == 50
+    assert player_stack.cash_equivalent() == 50
 
 
-def test_cash_equivalent(stack, chip, cash):
-    stack.increment(cash.TEN.value)
-    stack.increment(cash.FIFTEEN.value)
-    stack.increment(cash.TWENTY.value)
-    stack.increment(cash.FIVE.value)
+def test_game_stack_increment(game_stack):
+    game_stack.increment(game_stack.WHITE["name"], 100)
+    assert game_stack.chips[game_stack.WHITE["name"]] == 100
 
-    assert stack.chips[chip.WHITE.name] == 10
-    assert stack.chips[chip.RED.name] == 4
-    assert stack.chips[chip.BLUE.name] == 2
 
-    assert stack.cash_equivalent() == 50
+def test_stack_class_constants(player_stack):
+    assert player_stack.WHITE == {"name": "White", "value": 1}
+    assert player_stack.RED == {"name": "Red", "value": 5}
+    assert player_stack.BLUE == {"name": "Blue", "value": 10}

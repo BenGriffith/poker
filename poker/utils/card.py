@@ -1,11 +1,14 @@
+from poker.utils.constants import FaceCards
+
+
 class Card:
 
     def __init__(self, suit: str, rank: str) -> None:
         self.suit = suit
         self.rank = rank
 
-    def value(self):
-        pass
+    def value(self) -> int:
+        return FaceCards[self.rank].value
 
     def __str__(self) -> str:
-        return f"{self.suit}, {self.rank}"
+        return f"({self.suit}, {self.rank})"
