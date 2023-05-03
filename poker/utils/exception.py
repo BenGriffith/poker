@@ -42,3 +42,7 @@ class NotReadyException(BaseException):
 
 class InvalidActionException(BaseException):
     pass
+
+
+class InsufficientChipException(BaseException):
+    pass

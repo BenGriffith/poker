@@ -36,13 +36,6 @@ class PlayerStack:
     
     def decrement(self, chip: str, value: int) -> None:
         self.chips[chip] -= value
-    
-    def chip_count(self) -> tuple:
-        return (
-            self.chips[self.WHITE["name"]],
-            self.chips[self.RED["name"]],
-            self.chips[self.BLUE["name"]],
-            )
 
     def cash_equivalent(self):
         white = self.chips[self.WHITE["name"]] * self.WHITE["value"]

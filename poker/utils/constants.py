@@ -1,13 +1,15 @@
 from enum import Enum
 
+import emoji
 
-SUITS = "Hearts Diamonds Spades Clubs".split()
+SUITS = f"{emoji.emojize(':heart_suit:')} {emoji.emojize(':diamond_suit:')} {emoji.emojize(':spade_suit:')} {emoji.emojize(':club_suit:')}".split()
 NUMBER_CARDS = list(range(2, 11))
 INCREMENT_LIMIT = 100
 SINGLE_CHIP = 1
 DOUBLE = 2
 COMPETITION = (list(range(1, 5)))
 PLAYER_NAME = "You"
+GAME_DELAY = 2
 
 
 class FaceCards(Enum):

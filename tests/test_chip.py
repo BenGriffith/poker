@@ -41,11 +41,6 @@ def test_stack_decrement(player_stack, cash):
     assert player_stack.chips[player_stack.WHITE["name"]] == 22
 
 
-def test_chip_count(thirty_chips, player_stack):
-    thirty_chips
-    assert player_stack.chip_count() == (30, 0, 0) # WHITE: 30, RED: 0, BLUE: 0
-
-
 def test_cash_equivalent(fifty_chips, player_stack):
     fifty_chips
     assert player_stack.chips[player_stack.WHITE["name"]] == 50

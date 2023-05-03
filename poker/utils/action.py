@@ -23,7 +23,7 @@ class Action:
         self.bet(chip=chip, value=value)
 
     def fold(self) -> None:
-        self.person.hand = []
+        self.person.pocket_cards = []
 
     def increase(self, chip: str, value: int) -> None: # raise
         self.bet(chip=chip, value=value)

@@ -11,4 +11,4 @@ class Card:
         return FaceCards[self.rank].value
 
     def __str__(self) -> str:
-        return f"{self.suit}, {self.rank}"
+        return f"({self.suit}, {self.rank})"

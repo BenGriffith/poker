@@ -13,7 +13,7 @@ class Player:
     def __init__(self, name: str = None, cash: int = 0) -> None:
         self.name = name
         self.cash = cash
-        self.hand: list[Card] = []
+        self.pocket_cards: list[Card] = []
         self.stack = PlayerStack()
         self.kind = self.__class__.__name__
         self.best_hand = {}
@@ -22,7 +22,7 @@ class Player:
         self.stack.increment(cash=value)
         self.cash -= value
 
-    def process_bet(self, raise_amount: int) -> int:    
+    def process_bet(self, raise_amount: int) -> int:
         self.stack.decrement(chip=self.stack.WHITE.get("name"), value=raise_amount)
         return raise_amount
 
@@ -36,14 +36,14 @@ class Computer(Player):
         if raise_amount == 0:
             return random.choice([Action.CHECK, Action.RAISE])
         else:
-            if raise_amount <= self.stack.cash_equivalent():
+            if raise_amount <= self.stack.chips["White"]:
                 return Action.CALL
             else:
                 return Action.FOLD
                 
 
     def process_bet(self, raise_amount: int) -> int:
-        white, red, blue = self.stack.chip_count()
+        white = self.stack.chips["White"]
         if raise_amount == 0:
             # random bet or bet
             white_third = white // 3
@@ -61,10 +61,14 @@ class Dealer(Player):
     def __init__(self) -> None:
         self.deck = Deck()
         self.hand: list[Card] = []
+        self.kind = self.__class__.__name__
 
     def shuffle_deck(self) -> None:
         random.shuffle(self.deck.cards)
 
     def deal_card(self, person: any) -> None:
         card = self.deck.cards.pop()
-        person.hand.append(card)
+        if person.kind in [Player.PLAYER, Player.COMPUTER]:
+            person.pocket_cards.append(card)
+        else:
+            person.hand.append(card)
