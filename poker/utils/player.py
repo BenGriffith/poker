@@ -19,10 +19,16 @@ class Player:
         self.best_hand = {}
 
     def buy_chips(self, value: int) -> None:
+        """
+        Increment player chip count
+        """
         self.stack.increment(cash=value)
         self.cash -= value
 
     def process_bet(self, raise_amount: int) -> int:
+        """
+        Decrement player chip count
+        """
         self.stack.decrement(chip=self.stack.WHITE.get("name"), value=raise_amount)
         return raise_amount
 
@@ -33,6 +39,9 @@ class Computer(Player):
         Player.__init__(self, name, cash)
 
     def select_action(self, raise_amount: int) -> str:
+        """
+        Based off raise amount, select computer action
+        """
         if raise_amount == 0:
             return random.choice([Action.CHECK, Action.RAISE])
         else:
@@ -43,6 +52,9 @@ class Computer(Player):
                 
 
     def process_bet(self, raise_amount: int) -> int:
+        """
+        Process computer bet by calculating a random amount or calling a raise
+        """
         white = self.stack.chips["White"]
         if raise_amount == 0:
             # random bet or bet
@@ -67,6 +79,9 @@ class Dealer(Player):
         random.shuffle(self.deck.cards)
 
     def deal_card(self, person: any) -> None:
+        """
+        Deal card for player and dealer/community cards
+        """
         card = self.deck.cards.pop()
         if person.kind in [Player.PLAYER, Player.COMPUTER]:
             person.pocket_cards.append(card)

@@ -14,6 +14,9 @@ class PlayerStack:
         self.chips = Counter()
     
     def increment(self, cash: int) -> None:
+        """
+        Increment player chip count
+        """
         if cash > INCREMENT_LIMIT:
             raise IncrementException
         
@@ -35,9 +38,15 @@ class PlayerStack:
             self.chips[self.WHITE["name"]] += SINGLE_CHIP * Cash.HUNDRED.value
     
     def decrement(self, chip: str, value: int) -> None:
+        """
+        Decrement player chip count
+        """
         self.chips[chip] -= value
 
     def cash_equivalent(self):
+        """
+        Convert chips to cash
+        """
         white = self.chips[self.WHITE["name"]] * self.WHITE["value"]
         red = self.chips[self.RED["name"]] * self.RED["value"]
         blue = self.chips[self.BLUE["name"]] * self.BLUE["value"]
