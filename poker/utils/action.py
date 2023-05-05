@@ -12,9 +12,6 @@ class Action:
         self.game_stack = game_stack
         self.person = player
 
-    def check(self) -> None:
-        pass
-
     def bet(self, chip: str, value: int) -> None:
         self.game_stack.increment(chip=chip, quantity=value)
         self.person.stack.decrement(chip=chip, value=value)
