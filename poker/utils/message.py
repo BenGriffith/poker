@@ -50,12 +50,6 @@ class GameMessage:
         if count not in COMPETITION:
             raise RangeException
         return count
-
-    def competition_cash(self) -> int:
-        cash = int(input(f"How much money should each player get? {self.cash_options[-2::]} "))
-        if cash not in self.cash_options:
-            raise CashException
-        return cash
     
     def action(self, has_raise: bool, raise_amount: int) -> str:
         if has_raise:
