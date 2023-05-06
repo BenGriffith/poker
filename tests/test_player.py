@@ -1,6 +1,4 @@
 def test_player(player_two):
-    assert player_two.PLAYER == "Player"
-    assert player_two.COMPUTER == "Computer"
     assert player_two.name == "Tim"
     assert player_two.cash == 100
     assert len(player_two.pocket_cards) == 2

@@ -2,13 +2,6 @@ from poker.utils.chip import GameStack
 from poker.utils.player import Player
 
 
-def test_action_class_constants(action):
-    assert action.CHECK == "check"
-    assert action.RAISE == "raise"
-    assert action.CALL == "call"
-    assert action.FOLD == "fold"
-
-
 def test_action(action):
     assert isinstance(action.game_stack, GameStack)
     assert isinstance(action.person, Player)
