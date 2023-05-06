@@ -1,5 +1,4 @@
 import random
-import logging
 from time import sleep
 from itertools import combinations
 from collections import Counter, defaultdict
@@ -41,17 +40,14 @@ class Game:
             self.player.name = PLAYER_NAME
             self._setup_player_cash()
         sleep(GAME_DELAY)
-        print("\nThanks for stopping by! Hope to see you again soon!")
+        print("Thanks for stopping by! Hope to see you again soon!")
 
     def _setup_player_cash(self) -> None:
         """
         Prompt to select how much cash to start with
         """
-        try:
-            self.player.cash = self.message.starting_cash()
-            competition_cash = self.player.cash
-        except (ValueError, CashException):
-            self._setup_player_cash()
+        self.player.cash = self.message.starting_cash()
+        competition_cash = self.player.cash
         self.player.buy_chips(value=self.player.cash)
         self._setup_competition_count_cash(cash=competition_cash)
 
@@ -59,10 +55,7 @@ class Game:
         """
         Prompt to select how many competitors to play against
         """
-        try:
-            competition_count = self.message.competition_count()
-        except (ValueError, RangeException):
-            self._setup_competition_count_cash()
+        competition_count = self.message.competition_count()
         self._create_competition(count=competition_count, cash=cash)
 
     def _setup_competition_names(self) -> None:

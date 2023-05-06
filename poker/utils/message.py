@@ -8,10 +8,14 @@ from rich.panel import Panel
 
 from poker.utils.constants import (
     Decision, 
-    Cash, 
+    Cash,
+    Blind, 
     COMPETITION, 
     PLAYER_NAME,
-    GAME_DELAY
+    GAME_DELAY,
+    PLAYER_TABLE_COLUMNS,
+    FIRST_PLAYER,
+    HIDDEN
 )
 from poker.utils.exception import (
     RangeException, 
@@ -40,16 +44,26 @@ class GameMessage:
         return False    
     
     def starting_cash(self) -> int:
-        player_response = int(input(f"How much money would you like to start off with? {self.cash_options} "))
-        if player_response not in self.cash_options:
-            raise CashException
-        return player_response
+        try:
+            player_response = int(input(f"How much money would you like to start off with? {self.cash_options} "))
+            if player_response not in self.cash_options:
+                raise CashException
+            return player_response
+        except (ValueError, CashException) as err:
+            print(err)
+            player_response = self.starting_cash()
+            return player_response
     
     def competition_count(self) -> int:
-        count = int(input(f"How many players would you like to play against? {COMPETITION} "))
-        if count not in COMPETITION:
-            raise RangeException
-        return count
+        try:
+            count = int(input(f"How many players would you like to play against? {COMPETITION} "))
+            if count not in COMPETITION:
+                raise RangeException
+            return count
+        except (ValueError, RangeException) as err:
+            print(err)
+            count = self.competition_count()
+            return count
     
     def action(self, has_raise: bool, raise_amount: int) -> str:
         if has_raise:
@@ -78,24 +92,37 @@ class GameMessage:
     
     def player_summary(self, players: dict) -> None:
         player_table = Table(title="Player Summary")
-        player_table.add_column("Order")
-        player_table.add_column("Name")
-        player_table.add_column("Chips")
-        player_table.add_column("Blind")
-        player_table.add_column("Pocket Cards")
-        player_table.add_column("Best Hand")
-        player_table.add_column("Short Name")
+
+        for column in PLAYER_TABLE_COLUMNS:
+            player_table.add_column(column)
+
         for player_id, player in players.items():
             player = player["player"]
+            player_order = str(player_id)
+            player_name = player.name            
+            player_chips = f"{GameStack.WHITE['name']}: {player.stack.chips[GameStack.WHITE['name']]}"
+            player_blind = Blind.BIG.name if player_id == FIRST_PLAYER else Blind.SMALL.name
+
+            player_pocket_cards = HIDDEN            
+            if player.name == PLAYER_NAME or len(player.best_hand) > 1:
+                player_pocket_cards = " ".join(f"{card}" for card in player.pocket_cards) 
+            
+            player_best_hand = ""
+            short_name = ""
+            if len(player.best_hand) > 1:
+                player_best_hand = ", ".join(f"{card}" for card in player.best_hand["hand"]) 
+                short_name = player.best_hand["short"]
+            
             player_table.add_row(
-                str(player_id), 
-                player.name, 
-                f"{GameStack.WHITE['name']}: {player.stack.chips[GameStack.WHITE['name']]}",
-                "Big" if player_id == 1 else "Small",
-                " ".join(f"{card}" for card in player.pocket_cards) if player.name == PLAYER_NAME or len(player.best_hand) > 1 else "Hidden",
-                ", ".join(f"{card}" for card in player.best_hand["hand"]) if len(player.best_hand) > 1 else "",
-                player.best_hand["short"] if len(player.best_hand) > 1 else ""
+                player_order, 
+                player_name, 
+                player_chips,
+                player_blind,
+                player_pocket_cards,
+                player_best_hand,
+                short_name
                 )
+            
         console = Console()
         console.print("", player_table)
     

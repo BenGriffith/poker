@@ -7,10 +7,12 @@ NUMBER_CARDS = list(range(2, 11))
 INCREMENT_LIMIT = 100
 SINGLE_CHIP = 1
 DOUBLE = 2
-COMPETITION = (list(range(1, 5)))
+COMPETITION = list(range(1, 5))
 PLAYER_NAME = "You"
-GAME_DELAY = 2
-
+GAME_DELAY = 0
+PLAYER_TABLE_COLUMNS = "Order, Name, Chips, Blind, Pocket Cards, Best Hand, Short Name".split(",")
+FIRST_PLAYER = 1
+HIDDEN = "Hidden"
 
 class FaceCards(Enum):
     J = 11

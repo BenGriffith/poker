@@ -4,28 +4,28 @@ from poker.utils.constants import INCREMENT_LIMIT, Cash
 class IncrementException(BaseException):
 
     def __init__(self):
-        self.message = f"value should be less than {INCREMENT_LIMIT}"
+        self.message = f"Value should be less than {INCREMENT_LIMIT}"
         super().__init__(self.message)
 
 
 class CashException(BaseException):
 
     def __init__(self):
-        self.message = f"invalid value. Acceptable values are {', '.join([f'${str(item.value)}' for item in Cash])}"
+        self.message = f"Invalid value. Acceptable values are {', '.join([f'${str(item.value)}' for item in Cash])}"
         super().__init__(self.message)
 
 
 class NegativeException(BaseException):
 
     def __init__(self):
-        self.message = "value should be greater than 0"
+        self.message = "Value should be greater than 0"
         super().__init__(self.message)
 
 
 class RangeException(BaseException):
     
     def __init__(self):
-        self.message = "value falls outside range"
+        self.message = "Value falls outside range"
         super().__init__(self.message)
 
 
