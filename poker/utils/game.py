@@ -11,14 +11,7 @@ from poker.utils.card import Card
 from poker.utils.action import Action
 from poker.utils.chip import GameStack
 from poker.utils.message import GameMessage
-from poker.utils.constants import Blind, PLAYER_NAME, GAME_DELAY
-from poker.utils.exception import (
-    RangeException, 
-    CashException, 
-    InvalidActionException, 
-    NegativeException,
-    InsufficientChipException
-)
+from poker.utils.constants import BetAction, PlayerKind, Blind, PLAYER_NAME, GAME_DELAY
     
 
 class Game:
@@ -121,9 +114,9 @@ class Game:
         for player_id, player in self.player_order.items():
             self.action.person = player["player"]
             if player_id == 1:
-                self.action.blind(chip=self.player.stack.WHITE["name"], value=Blind.BIG.value)
+                self.action.blind(chip=self.player.stack.white["name"], value=Blind.BIG.value)
             else:
-                self.action.blind(chip=self.player.stack.WHITE["name"], value=Blind.SMALL.value)
+                self.action.blind(chip=self.player.stack.white["name"], value=Blind.SMALL.value)
         sleep(GAME_DELAY)
         self.message.player_summary(players=self.player_order)
         sleep(GAME_DELAY)
@@ -134,10 +127,11 @@ class Game:
         """
         Prompt to select action during betting
         """
-        try:
-            player_action = self.message.action(has_raise=has_raise, raise_amount=raise_amount)
-        except InvalidActionException:
-            player_action = self._select_player_action(has_raise=has_raise, raise_amount=raise_amount)
+        if has_raise:
+            player_action = self.message.raise_response(raise_amount=raise_amount)
+            return player_action
+        
+        player_action = self.message.action()
         return player_action
 
     def _select_raise_amount(self) -> int:
@@ -145,13 +139,7 @@ class Game:
         Prompt to define raise amount
         """
         chip_count = self.player.stack.chips["White"]
-        try:
-            raise_amount = self.message.increase(chip_count=chip_count)
-        except (ValueError, NegativeException):
-            raise_amount = self._select_raise_amount()
-        except InsufficientChipException:
-            self.message.different_amount(chip_count=chip_count)
-            raise_amount = self._select_raise_amount()
+        raise_amount = self.message.increase(chip_count=chip_count)
         return raise_amount            
 
     def _process_player_action(self) -> dict:
@@ -168,29 +156,29 @@ class Game:
         for order, player in self.player_order.items():
             player = player["player"]
 
-            if player.kind == self.player.COMPUTER:
+            if player.kind == PlayerKind.COMPUTER.value:
                 player_action = player.select_action(raise_amount)
 
-            if player.kind == self.player.PLAYER:
+            if player.kind == PlayerKind.PLAYER.value:
                 player_action = self._select_player_action(has_raise, raise_amount)
-                if player_action == self.action.RAISE:
+                if player_action == BetAction.RAISE.value:
                     raise_amount = self._select_raise_amount()
             
-            if player_action in [self.action.FOLD, self.action.CHECK]:
+            if player_action in [BetAction.FOLD.value, BetAction.CHECK.value]:
                 action_log[order] = player_action
 
-            if player_action == self.action.RAISE:
+            if player_action == BetAction.RAISE.value:
                 has_raise = True
                 raise_amount = player.process_bet(raise_amount)
                 action_log[order] = {player_action: raise_amount}
-                self.pot.increment(self.player.stack.WHITE["name"], raise_amount)
+                self.pot.increment(self.player.stack.white["name"], raise_amount)
 
-            if player_action == self.action.CALL:
+            if player_action == BetAction.CALL.value:
                 raise_amount = player.process_bet(raise_amount)
                 action_log[order] = {player_action: raise_amount}
-                self.pot.increment(self.player.stack.WHITE["name"], raise_amount)     
+                self.pot.increment(self.player.stack.white["name"], raise_amount)     
 
-            self.message.action_taken(player.name, player_action, raise_amount, [self.action.RAISE, self.action.CALL])
+            self.message.action_taken(player.name, player_action, raise_amount, [BetAction.RAISE.value, BetAction.CALL.value])
             sleep(GAME_DELAY)
 
         return action_log
@@ -217,7 +205,7 @@ class Game:
                     name=player.name,
                     action=player_action,
                     amount=call_amount,
-                    possible_actions=[self.action.CALL]
+                    possible_actions=[BetAction.CALL.value]
                 )
 
                 sleep(GAME_DELAY)
@@ -239,24 +227,24 @@ class Game:
         """
         players_with_check = []
         for order, action in action_log.items():
-            if action == self.action.CHECK:
+            if action == BetAction.CHECK.value:
                 players_with_check.append(order)
         return players_with_check
 
     def _process_player_checks_to_calls(self, player_id: int, player: Player, call_amount: int, action_log: dict) -> tuple:
-        if player.kind == self.player.COMPUTER:
+        if player.kind == PlayerKind.COMPUTER.value:
             player_action = player.select_action(raise_amount=call_amount)
 
-        if player.kind == self.player.PLAYER:
+        if player.kind == PlayerKind.PLAYER.value:
             player_action = self._select_player_action(has_raise=True, raise_amount=call_amount)
 
-        if player_action == self.action.FOLD:
+        if player_action == BetAction.FOLD.value:
             action_log[player_id] = player_action
 
-        if player_action == self.action.CALL:
+        if player_action == BetAction.CALL.value:
             call_amount = player.process_bet(raise_amount=call_amount)
             action_log[player_id] = {player_action: call_amount}
-            self.pot.increment(chip=self.player.stack.WHITE["name"], quantity=call_amount)
+            self.pot.increment(chip=self.player.stack.white["name"], quantity=call_amount)
 
         return (player_action, action_log)
 
@@ -265,7 +253,7 @@ class Game:
         Remove any players who folded from game play
         """
         for order, action in action_log.items():
-            if action == Action.FOLD:
+            if action == BetAction.FOLD.value:
                 del self.player_order[order]
 
     def _theflop(self) -> None:

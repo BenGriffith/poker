@@ -13,6 +13,19 @@ GAME_DELAY = 0
 PLAYER_TABLE_COLUMNS = "Order, Name, Chips, Blind, Pocket Cards, Best Hand, Short Name".split(",")
 FIRST_PLAYER = 1
 HIDDEN = "Hidden"
+THREE = 3
+
+class BetAction(Enum):
+    CHECK = "check"
+    RAISE = "raise"
+    CALL = "call"
+    FOLD = "fold"
+
+
+class PlayerKind(Enum):
+    PLAYER = "Player"
+    COMPUTER = "Computer"
+
 
 class FaceCards(Enum):
     J = 11

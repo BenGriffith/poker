@@ -6,9 +6,9 @@ from poker.utils.exception import IncrementException, CashException
 
 class PlayerStack:
 
-    WHITE = {"name": "White", "value": 1}
-    RED = {"name": "Red", "value": 5}
-    BLUE = {"name": "Blue", "value": 10}
+    white = {"name": "White", "value": 1}
+    red = {"name": "Red", "value": 5}
+    blue = {"name": "Blue", "value": 10}
 
     def __init__(self) -> None:
         self.chips = Counter()
@@ -25,17 +25,17 @@ class PlayerStack:
             raise CashException
         
         if cash == Cash.FIVE.value:
-            self.chips[self.WHITE["name"]] += SINGLE_CHIP * Cash.FIVE.value
+            self.chips[self.white["name"]] += SINGLE_CHIP * Cash.FIVE.value
         elif cash == Cash.TEN.value:
-            self.chips[self.WHITE["name"]] += SINGLE_CHIP * Cash.TEN.value
+            self.chips[self.white["name"]] += SINGLE_CHIP * Cash.TEN.value
         elif cash == Cash.FIFTEEN.value:
-            self.chips[self.WHITE["name"]] += SINGLE_CHIP * Cash.FIFTEEN.value
+            self.chips[self.white["name"]] += SINGLE_CHIP * Cash.FIFTEEN.value
         elif cash == Cash.TWENTY.value:
-            self.chips[self.WHITE["name"]] += SINGLE_CHIP * Cash.TWENTY.value
+            self.chips[self.white["name"]] += SINGLE_CHIP * Cash.TWENTY.value
         elif cash == Cash.FIFTY.value:
-            self.chips[self.WHITE["name"]] += SINGLE_CHIP * Cash.FIFTY.value
+            self.chips[self.white["name"]] += SINGLE_CHIP * Cash.FIFTY.value
         else:
-            self.chips[self.WHITE["name"]] += SINGLE_CHIP * Cash.HUNDRED.value
+            self.chips[self.white["name"]] += SINGLE_CHIP * Cash.HUNDRED.value
     
     def decrement(self, chip: str, value: int) -> None:
         """
@@ -47,16 +47,13 @@ class PlayerStack:
         """
         Convert chips to cash
         """
-        white = self.chips[self.WHITE["name"]] * self.WHITE["value"]
-        red = self.chips[self.RED["name"]] * self.RED["value"]
-        blue = self.chips[self.BLUE["name"]] * self.BLUE["value"]
+        white = self.chips[self.white["name"]] * self.white["value"]
+        red = self.chips[self.red["name"]] * self.red["value"]
+        blue = self.chips[self.blue["name"]] * self.blue["value"]
         return white + red + blue
     
 
 class GameStack(PlayerStack):
-
-    def __init__(self) -> None:
-        PlayerStack.__init__(self)
 
     def increment(self, chip: str, quantity: int) -> None:
         self.chips[chip] += quantity   

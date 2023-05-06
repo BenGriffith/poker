@@ -2,13 +2,10 @@ import random
 
 from poker.utils.chip import PlayerStack
 from poker.utils.deck import Deck, Card
-from poker.utils.action import Action
+from poker.utils.constants import BetAction, PlayerKind
 
 
 class Player:
-
-    PLAYER = "Player"
-    COMPUTER = "Computer"
 
     def __init__(self, name: str = None, cash: int = 0) -> None:
         self.name = name
@@ -29,7 +26,7 @@ class Player:
         """
         Decrement player chip count
         """
-        self.stack.decrement(chip=self.stack.WHITE.get("name"), value=raise_amount)
+        self.stack.decrement(chip=self.stack.white.get("name"), value=raise_amount)
         return raise_amount
 
 
@@ -43,12 +40,12 @@ class Computer(Player):
         Based off raise amount, select computer action
         """
         if raise_amount == 0:
-            return random.choice([Action.CHECK, Action.RAISE])
+            return random.choice([BetAction.CHECK.value, BetAction.RAISE.value])
         else:
             if raise_amount <= self.stack.chips["White"]:
-                return Action.CALL
+                return BetAction.CALL.value
             else:
-                return Action.FOLD
+                return BetAction.FOLD.value
                 
 
     def process_bet(self, raise_amount: int) -> int:
@@ -60,11 +57,11 @@ class Computer(Player):
             # random bet or bet
             white_third = white // 3
             white_chips = random.randint(1, white_third)
-            self.stack.decrement(chip=self.stack.WHITE.get("name"), value=white_chips)
+            self.stack.decrement(chip=self.stack.white.get("name"), value=white_chips)
             return white_chips
         else: 
             # match bet or call
-            self.stack.decrement(chip=self.stack.WHITE.get("name"), value=raise_amount)
+            self.stack.decrement(chip=self.stack.white.get("name"), value=raise_amount)
             return raise_amount
             
 
@@ -83,7 +80,7 @@ class Dealer(Player):
         Deal card for player and dealer/community cards
         """
         card = self.deck.cards.pop()
-        if person.kind in [Player.PLAYER, Player.COMPUTER]:
+        if person.kind in [PlayerKind.PLAYER.value, PlayerKind.COMPUTER.value]:
             person.pocket_cards.append(card)
         else:
             person.hand.append(card)

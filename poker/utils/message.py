@@ -7,6 +7,7 @@ from rich.panel import Panel
 
 
 from poker.utils.constants import (
+    BetAction,
     Decision, 
     Cash,
     Blind, 
@@ -15,19 +16,17 @@ from poker.utils.constants import (
     GAME_DELAY,
     PLAYER_TABLE_COLUMNS,
     FIRST_PLAYER,
-    HIDDEN
+    HIDDEN,
+    THREE
 )
 from poker.utils.exception import (
     RangeException, 
     CashException, 
-    GamePlayException, 
-    NotReadyException, 
     InvalidActionException, 
     NegativeException,
     InsufficientChipException
 )
 from poker.utils.chip import GameStack
-from poker.utils.action import Action
 from poker.utils.card import Card
 
 
@@ -64,31 +63,44 @@ class GameMessage:
             print(err)
             count = self.competition_count()
             return count
-    
-    def action(self, has_raise: bool, raise_amount: int) -> str:
-        if has_raise:
-            player_response = input(f"The bet was raised by {raise_amount}, what would you like to do? [{Action.CALL} or {Action.FOLD}] ").lower()
-            if player_response not in [Action.CALL, Action.FOLD]:
-                raise InvalidActionException
-        else:
-            player_response = input(f"What would you like to do? [{Action.CHECK}, {Action.RAISE} or {Action.FOLD}] ").lower()
-            if player_response not in [Action.CHECK, Action.RAISE, Action.FOLD]:
-                raise InvalidActionException
-        return player_response
+
+    def raise_response(self, raise_amount: int) -> str:
+        try:
+            player_response = input(f"The bet was raised by {raise_amount}, what would you like to do? [{BetAction.CALL.value} or {BetAction.FOLD.value}] ").lower()
+            if player_response not in [BetAction.CALL.value, BetAction.FOLD.value]:
+                raise InvalidActionException([BetAction.CALL.value, BetAction.FOLD.value])
+            return player_response
+        except InvalidActionException as err:
+            print(err)
+            player_response = self.raise_response(raise_amount=raise_amount)
+            return player_response
+
+    def action(self) -> str:
+        try:
+            player_response = input(f"What would you like to do? [{BetAction.CHECK.value}, {BetAction.RAISE.value} or {BetAction.FOLD.value}] ").lower()
+            if player_response not in [BetAction.CHECK.value, BetAction.RAISE.value, BetAction.FOLD.value]:
+                raise InvalidActionException([BetAction.CHECK.value, BetAction.RAISE.value, BetAction.CALL.value])
+            return player_response
+        except InvalidActionException as err:
+            print(err)
+            player_response = self.action()
+            return player_response
 
     def action_taken(self, name: str, action: str, amount: int, possible_actions: list[str] = []) -> None:
         print(f"{name} decided to {action} {amount if action in possible_actions else ''}") 
     
     def increase(self, chip_count: int) -> int:
-        player_response = int(input(f"How much would you like to raise? "))
-        if player_response <= 0:
-            raise NegativeException
-        if player_response >= chip_count:
-            raise InsufficientChipException
-        return player_response
-    
-    def different_amount(self, chip_count: int) -> None:
-        print(f"You only have {chip_count} chips. Please select a lower amount.")
+        try:
+            player_response = int(input(f"How much would you like to raise? "))
+            if player_response <= 0:
+                raise NegativeException
+            if player_response >= chip_count:
+                raise InsufficientChipException(chip_count=chip_count)
+            return player_response
+        except (ValueError, NegativeException, InsufficientChipException) as err:
+            print(err)
+            player_response = self.increase(chip_count=chip_count)
+            return player_response
     
     def player_summary(self, players: dict) -> None:
         player_table = Table(title="Player Summary")
@@ -100,7 +112,7 @@ class GameMessage:
             player = player["player"]
             player_order = str(player_id)
             player_name = player.name            
-            player_chips = f"{GameStack.WHITE['name']}: {player.stack.chips[GameStack.WHITE['name']]}"
+            player_chips = f"{GameStack.white['name']}: {player.stack.chips[GameStack.white['name']]}"
             player_blind = Blind.BIG.name if player_id == FIRST_PLAYER else Blind.SMALL.name
 
             player_pocket_cards = HIDDEN            
@@ -127,19 +139,15 @@ class GameMessage:
         console.print("", player_table)
     
     def game_progression_prompt(self, progress: bool = None) -> None:
-        try:
-            if progress:
-                player_response = input(f"How about now, are you ready? [yes/no] ").lower()
-            else:
-                player_response = input(f"Are you ready to continue? [yes/no] ").lower()
-            if player_response not in self.decision:
-                raise GamePlayException
-            if player_response in [Decision.N.value, Decision.NO.value]:
-                raise NotReadyException
-        except GamePlayException:
+        if progress:
+            player_response = input(f"How about now, are you ready? [yes/no] ").lower()
+        else:
+            player_response = input(f"Are you ready to continue? [yes/no] ").lower()
+            
+        if player_response not in self.decision:
             sleep(GAME_DELAY)
             self.game_progression_prompt()
-        except NotReadyException:
+        if player_response in [Decision.N.value, Decision.NO.value]:
             sleep(GAME_DELAY)
             self.game_progression_prompt(progress=True)    
 
@@ -156,14 +164,18 @@ class GameMessage:
         self.player_summary(players=players)
         sleep(GAME_DELAY)
 
-        if len(winner) > 3:
+        if len(winner) > THREE:
             winners = len(winner) // 2
             winnings = pot.cash_equivalent() / winners
-            winners_names = [value for key, value in winner.items() if "name" in key]
+            winners_names = []
+            for key, value in winner.items():
+                if "name" in key:
+                    winners_names.append(f"and {value.lower()}" if value == PLAYER_NAME else value)
             winners_names_string = ", ".join(winners_names)
-            print(f"\nCongratulations {winners_names_string}! You each won ${winnings}!")
-        if len(winner) == 3:
-            if winner["name"] == "You":
+            print(f"\nWe have a tie! Congratulations {winners_names_string}! You each won ${winnings}!")
+        
+        if len(winner) == THREE:
+            if winner["name"] == PLAYER_NAME:
                 print(f"\nCongratulations you won ${pot.cash_equivalent()}!")
             else:
                 print(f"\nCongratulations {winner['name']}! You won ${pot.cash_equivalent()}!")

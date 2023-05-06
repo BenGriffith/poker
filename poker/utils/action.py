@@ -3,11 +3,6 @@ from poker.utils.chip import GameStack
 
 class Action:
 
-    CHECK = "check"
-    RAISE = "raise"
-    CALL = "call"
-    FOLD = "fold"
-
     def __init__(self, game_stack: GameStack, player: any = None) -> None:
         self.game_stack = game_stack
         self.person = player
