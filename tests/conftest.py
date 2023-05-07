@@ -116,9 +116,39 @@ def hand_three_kind():
     return hand
 
 @pytest.fixture
+def hand_three_kind_subsequent_gt():
+    suit = ["C", "H", "D", "S", "S"]
+    rank = [10, 10, 10, 2, 3]
+    cards = list(zip(suit, rank))
+    hand = [Card(suit=card[0], rank=card[1]) for card in cards]
+    return hand
+
+@pytest.fixture
+def hand_three_kind_subsequent_lt():
+    suit = ["C", "D", "H", "S", "S"]
+    rank = [5, 5, 5, 10, 2]
+    cards = list(zip(suit, rank))
+    hand = [Card(suit=card[0], rank=card[1]) for card in cards]
+    return hand
+
+@pytest.fixture
 def counter_hand_three_kind(hand_three_kind):
     counter = Counter()
     for card in hand_three_kind:
+        counter.update([card.rank])
+    return counter
+
+@pytest.fixture
+def counter_hand_three_kind_subsequent_gt(hand_three_kind_subsequent_gt):
+    counter = Counter()
+    for card in hand_three_kind_subsequent_gt:
+        counter.update([card.rank])
+    return counter
+
+@pytest.fixture
+def counter_hand_three_kind_subsequent_lt(hand_three_kind_subsequent_lt):
+    counter = Counter()
+    for card in hand_three_kind_subsequent_lt:
         counter.update([card.rank])
     return counter
 
@@ -129,3 +159,126 @@ def hand_rankings():
         "two_pair": False,
         "pair": False,
     }
+
+@pytest.fixture
+def initial_three_kind(game, hand_three_kind, counter_hand_three_kind, hand_rankings):
+    person = game.player
+    game._three_kind(
+        hand=hand_three_kind,
+        counter_hand=counter_hand_three_kind,
+        person=person,
+        hand_rankings=hand_rankings
+    )
+    return game.player, hand_rankings
+
+@pytest.fixture
+def hand_pair():
+    suit = ["H", "D", "S", "C", "H"]
+    rank = [7, 7, 5, 2, 3]
+    cards = list(zip(suit, rank))
+    hand = [Card(suit=card[0], rank=card[1]) for card in cards]
+    return hand
+
+@pytest.fixture
+def hand_pair_subsequent_gt():
+    suit = ["C", "H", "D", "S", "S"]
+    rank = [10, 10, 8, 2, 3]
+    cards = list(zip(suit, rank))
+    hand = [Card(suit=card[0], rank=card[1]) for card in cards]
+    return hand
+
+@pytest.fixture
+def hand_pair_subsequent_lt():
+    suit = ["C", "D", "H", "S", "S"]
+    rank = [5, 5, 4, 10, 2]
+    cards = list(zip(suit, rank))
+    hand = [Card(suit=card[0], rank=card[1]) for card in cards]
+    return hand
+
+@pytest.fixture
+def counter_hand_pair(hand_pair):
+    counter = Counter()
+    for card in hand_pair:
+        counter.update([card.rank])
+    return counter
+
+@pytest.fixture
+def counter_hand_pair_subsequent_gt(hand_pair_subsequent_gt):
+    counter = Counter()
+    for card in hand_pair_subsequent_gt:
+        counter.update([card.rank])
+    return counter
+
+@pytest.fixture
+def counter_hand_pair_subsequent_lt(hand_pair_subsequent_lt):
+    counter = Counter()
+    for card in hand_pair_subsequent_lt:
+        counter.update([card.rank])
+    return counter
+
+@pytest.fixture
+def initial_pair(game, hand_pair, counter_hand_pair, hand_rankings):
+    person = game.player
+    game._pair(
+        hand=hand_pair,
+        counter_hand=counter_hand_pair,
+        person=person,
+        hand_rankings=hand_rankings
+    )
+    return game.player, hand_rankings
+
+@pytest.fixture
+def hand_high_card():
+    suit = ["H", "D", "S", "C", "H"]
+    rank = [9, 7, 5, 2, 3]
+    cards = list(zip(suit, rank))
+    hand = [Card(suit=card[0], rank=card[1]) for card in cards]
+    return hand
+
+@pytest.fixture
+def hand_high_card_subsequent_gt():
+    suit = ["C", "H", "D", "S", "S"]
+    rank = [10, 4, 8, 2, 3]
+    cards = list(zip(suit, rank))
+    hand = [Card(suit=card[0], rank=card[1]) for card in cards]
+    return hand
+
+@pytest.fixture
+def hand_high_card_subsequent_lt():
+    suit = ["C", "D", "H", "S", "S"]
+    rank = [5, 6, 4, 3, 2]
+    cards = list(zip(suit, rank))
+    hand = [Card(suit=card[0], rank=card[1]) for card in cards]
+    return hand
+
+@pytest.fixture
+def counter_hand_high_card(hand_high_card):
+    counter = Counter()
+    for card in hand_high_card:
+        counter.update([card.rank])
+    return counter
+
+@pytest.fixture
+def counter_hand_high_card_subsequent_gt(hand_high_card_subsequent_gt):
+    counter = Counter()
+    for card in hand_high_card_subsequent_gt:
+        counter.update([card.rank])
+    return counter
+
+@pytest.fixture
+def counter_hand_high_card_subsequent_lt(hand_high_card_subsequent_lt):
+    counter = Counter()
+    for card in hand_high_card_subsequent_lt:
+        counter.update([card.rank])
+    return counter
+
+@pytest.fixture
+def initial_high_card(game, hand_high_card, counter_hand_high_card, hand_rankings):
+    person = game.player
+    game._pair(
+        hand=hand_high_card,
+        counter_hand=counter_hand_high_card,
+        person=person,
+        hand_rankings=hand_rankings
+    )
+    return game.player, hand_rankings
