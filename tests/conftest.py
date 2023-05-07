@@ -1,3 +1,5 @@
+from collections import Counter
+
 import pytest
 
 from poker.utils.card import Card
@@ -7,6 +9,7 @@ from poker.utils.action import Action
 from poker.utils.player import Player, Computer, Dealer
 from poker.utils.constants import Cash
 from poker.utils.message import GameMessage
+from poker.utils.game import Game
 
 
 @pytest.fixture
@@ -95,3 +98,34 @@ def action_raise_prompt():
 @pytest.fixture
 def action_prompt():
     return "What would you like to do? "
+
+@pytest.fixture
+def game():
+    message = GameMessage()
+    dealer = Dealer()
+    player = Player()
+    game = Game(message=message, dealer=dealer, player=player)
+    return game
+
+@pytest.fixture
+def hand_three_kind():
+    suit = ["H", "D", "S", "C", "H"]
+    rank = [7, 7, 7, 2, 3]
+    cards = list(zip(suit, rank))
+    hand = [Card(suit=card[0], rank=card[1]) for card in cards]
+    return hand
+
+@pytest.fixture
+def counter_hand_three_kind(hand_three_kind):
+    counter = Counter()
+    for card in hand_three_kind:
+        counter.update([card.rank])
+    return counter
+
+@pytest.fixture
+def hand_rankings():
+    return {
+        "three_kind": False,
+        "two_pair": False,
+        "pair": False,
+    }
