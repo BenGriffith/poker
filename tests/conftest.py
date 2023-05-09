@@ -282,3 +282,81 @@ def initial_high_card(game, hand_high_card, counter_hand_high_card, hand_ranking
         hand_rankings=hand_rankings
     )
     return game.player, hand_rankings
+
+@pytest.fixture
+def hand_two_pair():
+    suit = ["H", "D", "S", "C", "H"]
+    rank = [4, 4, 5, 2, 2]
+    cards = list(zip(suit, rank))
+    hand = [Card(suit=card[0], rank=card[1]) for card in cards]
+    return hand
+
+@pytest.fixture
+def hand_two_pair_subsequent_gt():
+    suit = ["C", "H", "D", "S", "S"]
+    rank = [5, 5, 8, 3, 3]
+    cards = list(zip(suit, rank))
+    hand = [Card(suit=card[0], rank=card[1]) for card in cards]
+    return hand
+
+@pytest.fixture
+def hand_two_pair_subsequent_ge():
+    suit = ["C", "H", "D", "S", "S"]
+    rank = [6, 6, 8, 2, 2]
+    cards = list(zip(suit, rank))
+    hand = [Card(suit=card[0], rank=card[1]) for card in cards]
+    return hand
+
+@pytest.fixture
+def hand_two_pair_subsequent_lt():
+    suit = ["C", "D", "H", "S", "S"]
+    rank = [3, 3, 8, 2, 2]
+    cards = list(zip(suit, rank))
+    hand = [Card(suit=card[0], rank=card[1]) for card in cards]
+    return hand
+
+@pytest.fixture
+def counter_hand_two_pair(hand_two_pair):
+    counter = Counter()
+    for card in hand_two_pair:
+        counter.update([card.rank])
+    return counter
+
+@pytest.fixture
+def counter_hand_two_pair_subsequent_gt(hand_two_pair_subsequent_gt):
+    counter = Counter()
+    for card in hand_two_pair_subsequent_gt:
+        counter.update([card.rank])
+    return counter
+
+@pytest.fixture
+def counter_hand_two_pair_subsequent_ge(hand_two_pair_subsequent_ge):
+    counter = Counter()
+    for card in hand_two_pair_subsequent_ge:
+        counter.update([card.rank])
+    return counter
+
+@pytest.fixture
+def counter_hand_two_pair_subsequent_lt(hand_two_pair_subsequent_lt):
+    counter = Counter()
+    for card in hand_two_pair_subsequent_lt:
+        counter.update([card.rank])
+    return counter
+
+@pytest.fixture
+def initial_two_pair(game, hand_two_pair, counter_hand_two_pair, hand_rankings):
+    person = game.player
+    game._two_pair(
+        hand=hand_two_pair,
+        counter_hand=counter_hand_two_pair,
+        person=person,
+        hand_rankings=hand_rankings
+    )
+    return game.player, hand_rankings
+
+@pytest.fixture
+def winner_setup():
+    player = Player(name="Joe", cash=100)
+    computer_one = Computer(name="Becca", cash=100)
+    computer_two = Computer(name="Matt", cash=100)
+    return player, computer_one, computer_two
