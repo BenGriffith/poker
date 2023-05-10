@@ -128,18 +128,17 @@ class Game:
         Prompt to select action during betting
         """
         if has_raise:
-            player_action = self.message.raise_response(raise_amount=raise_amount)
+            player_action = self.message.raise_response(raise_amount=raise_amount, chip_count=self.player.stack.chips["White"])
             return player_action
         
-        player_action = self.message.action()
+        player_action = self.message.action(chip_count=self.player.stack.chips["White"])
         return player_action
 
     def _select_raise_amount(self) -> int:
         """
         Prompt to define raise amount
         """
-        chip_count = self.player.stack.chips["White"]
-        raise_amount = self.message.increase(chip_count=chip_count)
+        raise_amount = self.message.increase(chip_count=self.player.stack.chips["White"])
         return raise_amount            
 
     def _process_player_action(self) -> dict:
@@ -163,6 +162,8 @@ class Game:
                 player_action = self._select_player_action(has_raise, raise_amount)
                 if player_action == BetAction.RAISE.value:
                     raise_amount = self._select_raise_amount()
+                    if raise_amount == 0:
+                        player_action = BetAction.CHECK.value
             
             if player_action in [BetAction.FOLD.value, BetAction.CHECK.value]:
                 action_log[order] = player_action

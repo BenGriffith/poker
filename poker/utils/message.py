@@ -64,22 +64,29 @@ class GameMessage:
             count = self.competition_count()
             return count
 
-    def raise_response(self, raise_amount: int) -> str:
+    def raise_response(self, raise_amount: int, chip_count: int) -> str:
         try:
             player_response = input(f"The bet was raised by {raise_amount}, what would you like to do? [{BetAction.CALL.value} or {BetAction.FOLD.value}] ").lower()
             if player_response not in [BetAction.CALL.value, BetAction.FOLD.value]:
-                raise InvalidActionException([BetAction.CALL.value, BetAction.FOLD.value])
+                raise InvalidActionException(valid_actions=[BetAction.CALL.value, BetAction.FOLD.value])
+            if raise_amount > chip_count and player_response != BetAction.FOLD.value:
+                raise InsufficientChipException(chip_count=chip_count)
             return player_response
-        except InvalidActionException as err:
+        except (InvalidActionException, InsufficientChipException) as err:
             print(err)
-            player_response = self.raise_response(raise_amount=raise_amount)
+            player_response = self.raise_response(raise_amount=raise_amount, chip_count=chip_count)
             return player_response
 
-    def action(self) -> str:
+    def action(self, chip_count: int) -> str:
+        if chip_count == 0:
+            valid_actions = [BetAction.CHECK.value, BetAction.FOLD.value]
+        else:
+            valid_actions = [BetAction.CHECK.value, BetAction.RAISE.value, BetAction.FOLD.value]
+
         try:
-            player_response = input(f"What would you like to do? [{BetAction.CHECK.value}, {BetAction.RAISE.value} or {BetAction.FOLD.value}] ").lower()
-            if player_response not in [BetAction.CHECK.value, BetAction.RAISE.value, BetAction.FOLD.value]:
-                raise InvalidActionException([BetAction.CHECK.value, BetAction.RAISE.value, BetAction.CALL.value])
+            player_response = input(f"What would you like to do? [{', '.join(valid_actions)}] ").lower()
+            if player_response not in valid_actions:
+                raise InvalidActionException(valid_actions=valid_actions)
             return player_response
         except InvalidActionException as err:
             print(err)
@@ -92,9 +99,9 @@ class GameMessage:
     def increase(self, chip_count: int) -> int:
         try:
             player_response = int(input(f"How much would you like to raise? "))
-            if player_response <= 0:
+            if player_response < 0:
                 raise NegativeException
-            if player_response >= chip_count:
+            if player_response > chip_count:
                 raise InsufficientChipException(chip_count=chip_count)
             return player_response
         except (ValueError, NegativeException, InsufficientChipException) as err:
@@ -170,7 +177,7 @@ class GameMessage:
             winners_names = []
             for key, value in winner.items():
                 if "name" in key:
-                    winners_names.append(f"and {value.lower()}" if value == PLAYER_NAME else value)
+                    winners_names.append(value)
             winners_names_string = ", ".join(winners_names)
             print(f"\nWe have a tie! Congratulations {winners_names_string}! You each won ${winnings}!")
         

@@ -39,5 +39,5 @@ class InvalidActionException(BaseException):
 class InsufficientChipException(BaseException):
     
     def __init__(self, chip_count: int):
-        self.message = f"You only have {chip_count}. Please select a lower amount."
+        self.message = f"You only have {chip_count}. Please select a different amount."
         super().__init__(self.message)

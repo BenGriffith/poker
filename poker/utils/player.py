@@ -40,23 +40,29 @@ class Computer(Player):
         Based off raise amount, select computer action
         """
         if raise_amount == 0:
-            return random.choice([BetAction.CHECK.value, BetAction.RAISE.value])
+            if self.stack.chips["White"] == 0:
+                return BetAction.CHECK.value
+            else:
+                return random.choice([BetAction.CHECK.value, BetAction.RAISE.value])
         else:
             if raise_amount <= self.stack.chips["White"]:
                 return BetAction.CALL.value
             else:
-                return BetAction.FOLD.value
-                
+                return BetAction.FOLD.value            
 
     def process_bet(self, raise_amount: int) -> int:
         """
         Process computer bet by calculating a random amount or calling a raise
         """
-        white = self.stack.chips["White"]
         if raise_amount == 0:
             # random bet or bet
-            white_third = white // 3
-            white_chips = random.randint(1, white_third)
+            if self.stack.chips["White"] == 1:
+                white_chips = self.stack.chips["White"]
+            elif self.stack.chips["White"] <= 10:
+                white_chips = random.choice(list(range(1, self.stack.chips["White"] + 1)))
+            else:
+                white_third = self.stack.chips["White"] // 3
+                white_chips = random.randint(1, white_third)
             self.stack.decrement(chip=self.stack.white.get("name"), value=white_chips)
             return white_chips
         else: 

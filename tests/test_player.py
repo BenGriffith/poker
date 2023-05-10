@@ -50,7 +50,7 @@ def test_computer_process_call(computer):
 def test_dealer_shuffle_deck(dealer):
     unshuffled_first_card = dealer.deck.cards[0]
     dealer.shuffle_deck()
-    shuffled_first_card= dealer.deck.cards[0]
+    shuffled_first_card = dealer.deck.cards[0]
     assert unshuffled_first_card != shuffled_first_card
 
 
