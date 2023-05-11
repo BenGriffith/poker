@@ -17,7 +17,7 @@ from poker.utils.constants import (
     PLAYER_TABLE_COLUMNS,
     FIRST_PLAYER,
     HIDDEN,
-    THREE
+    TIE
 )
 from poker.utils.exception import (
     RangeException, 
@@ -171,7 +171,7 @@ class GameMessage:
         self.player_summary(players=players)
         sleep(GAME_DELAY)
 
-        if len(winner) > THREE:
+        if len(winner) > TIE:
             winners = len(winner) // 2
             winnings = pot.cash_equivalent() / winners
             winners_names = []
@@ -181,7 +181,7 @@ class GameMessage:
             winners_names_string = ", ".join(winners_names)
             print(f"\nWe have a tie! Congratulations {winners_names_string}! You each won ${winnings}!")
         
-        if len(winner) == THREE:
+        if len(winner) == TIE:
             if winner["name"] == PLAYER_NAME:
                 print(f"\nCongratulations you won ${pot.cash_equivalent()}!")
             else:

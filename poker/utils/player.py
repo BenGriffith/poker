@@ -2,7 +2,7 @@ import random
 
 from poker.utils.chip import PlayerStack
 from poker.utils.deck import Deck, Card
-from poker.utils.constants import BetAction, PlayerKind
+from poker.utils.constants import BetAction, BetValue, PlayerKind
 
 
 class Player:
@@ -39,8 +39,8 @@ class Computer(Player):
         """
         Based off raise amount, select computer action
         """
-        if raise_amount == 0:
-            if self.stack.chips["White"] == 0:
+        if raise_amount == BetValue.ZERO.value:
+            if self.stack.chips["White"] == BetValue.ZERO.value:
                 return BetAction.CHECK.value
             else:
                 return random.choice([BetAction.CHECK.value, BetAction.RAISE.value])
@@ -54,14 +54,14 @@ class Computer(Player):
         """
         Process computer bet by calculating a random amount or calling a raise
         """
-        if raise_amount == 0:
+        if raise_amount == BetValue.ZERO.value:
             # random bet or bet
-            if self.stack.chips["White"] == 1:
+            if self.stack.chips["White"] == BetValue.ONE.value:
                 white_chips = self.stack.chips["White"]
-            elif self.stack.chips["White"] <= 10:
+            elif self.stack.chips["White"] <= BetValue.TEN.value:
                 white_chips = random.choice(list(range(1, self.stack.chips["White"] + 1)))
             else:
-                white_third = self.stack.chips["White"] // 3
+                white_third = self.stack.chips["White"] // BetValue.THREE.value
                 white_chips = random.randint(1, white_third)
             self.stack.decrement(chip=self.stack.white.get("name"), value=white_chips)
             return white_chips
