@@ -1,15 +1,12 @@
 import pytest
 
 from poker.utils.message import GameMessage
-from poker.utils.action import Action
-from poker.utils.constants import COMPETITION
+from poker.utils.constants import BetAction, COMPETITION
 from poker.utils.exception import (
     CashException, 
     RangeException, 
     InvalidActionException, 
-    NegativeException, 
-    GamePlayException, 
-    NotReadyException
+    NegativeException
 )
 
 message = GameMessage()
@@ -101,10 +98,10 @@ def test_competition_count_invalid_response(monkeypatch, competition_count_promp
         
 
 @pytest.mark.parametrize("test_input, expected", [
-    ("CALL", [Action.CALL, Action.FOLD]),
-    ("call", [Action.CALL, Action.FOLD]),
-    ("FOLD", [Action.CALL, Action.FOLD]),
-    ("fold", [Action.CALL, Action.FOLD])
+    ("CALL", [BetAction.CALL.value, BetAction.FOLD.value]),
+    ("call", [BetAction.CALL.value, BetAction.FOLD.value]),
+    ("FOLD", [BetAction.CALL.value, BetAction.FOLD.value]),
+    ("fold", [BetAction.CALL.value, BetAction.FOLD.value])
 ])
 def test_action_valid_response_raise(monkeypatch, action_raise_prompt, test_input, expected):
     monkeypatch.setattr("builtins.input", lambda _: test_input)
@@ -113,12 +110,12 @@ def test_action_valid_response_raise(monkeypatch, action_raise_prompt, test_inpu
 
 
 @pytest.mark.parametrize("test_input, expected", [
-    ("CHECK", [Action.CHECK, Action.RAISE, Action.FOLD]),
-    ("check", [Action.CHECK, Action.RAISE, Action.FOLD]),
-    ("RAISE", [Action.CHECK, Action.RAISE, Action.FOLD]),
-    ("raise", [Action.CHECK, Action.RAISE, Action.FOLD]),
-    ("FOLD", [Action.CHECK, Action.RAISE, Action.FOLD]),
-    ("fold", [Action.CHECK, Action.RAISE, Action.FOLD]),
+    ("CHECK", [BetAction.CHECK.value, BetAction.RAISE.value, BetAction.FOLD.value]),
+    ("check", [BetAction.CHECK.value, BetAction.RAISE.value, BetAction.FOLD.value]),
+    ("RAISE", [BetAction.CHECK.value, BetAction.RAISE.value, BetAction.FOLD.value]),
+    ("raise", [BetAction.CHECK.value, BetAction.RAISE.value, BetAction.FOLD.value]),
+    ("FOLD", [BetAction.CHECK.value, BetAction.RAISE.value, BetAction.FOLD.value]),
+    ("fold", [BetAction.CHECK.value, BetAction.RAISE.value, BetAction.FOLD.value]),
 ])
 def test_action_valid_response_no_raise(monkeypatch, action_prompt, test_input, expected):
     monkeypatch.setattr("builtins.input", lambda _: test_input)
@@ -127,30 +124,30 @@ def test_action_valid_response_no_raise(monkeypatch, action_prompt, test_input, 
 
 
 @pytest.mark.parametrize("test_input, expected", [
-    ("ten", [Action.CALL, Action.FOLD]),
-    ("raise", [Action.CALL, Action.FOLD]),
-    ("check", [Action.CALL, Action.FOLD]),
-    ("5", [Action.CALL, Action.FOLD]),
+    ("ten", [BetAction.CALL.value, BetAction.FOLD.value]),
+    ("raise", [BetAction.CALL.value, BetAction.FOLD.value]),
+    ("check", [BetAction.CALL.value, BetAction.FOLD.value]),
+    ("5", [BetAction.CALL.value, BetAction.FOLD.value]),
 ])
 def test_action_invalid_response_raise(monkeypatch, action_raise_prompt, test_input, expected):
     with pytest.raises((ValueError, InvalidActionException)):
         monkeypatch.setattr("builtins.input", lambda _: test_input)
         response = input(action_raise_prompt).lower()
         if response not in expected:
-            raise InvalidActionException
+            raise InvalidActionException(valid_actions=[BetAction.CALL.value, BetAction.FOLD.value])
 
 
 @pytest.mark.parametrize("test_input, expected", [
-    ("call", [Action.CHECK, Action.RAISE, Action.FOLD]),
-    ("CALL", [Action.CHECK, Action.RAISE, Action.FOLD]),
-    ("ten", [Action.CHECK, Action.RAISE, Action.FOLD])
+    ("call", [BetAction.CHECK.value, BetAction.RAISE.value, BetAction.FOLD.value]),
+    ("CALL", [BetAction.CHECK.value, BetAction.RAISE.value, BetAction.FOLD.value]),
+    ("ten", [BetAction.CHECK.value, BetAction.RAISE.value, BetAction.FOLD.value])
 ])
 def test_action_invalid_response(monkeypatch, action_prompt, test_input, expected):
     with pytest.raises((ValueError, InvalidActionException)):
         monkeypatch.setattr("builtins.input", lambda _: test_input)
         response = input(action_prompt).lower()
         if response not in expected:
-            raise InvalidActionException
+            raise InvalidActionException(valid_actions=[BetAction.CHECK.value, BetAction.RAISE.value, BetAction.FOLD.value])
         
 
 @pytest.mark.parametrize("test_input, expected", [
@@ -184,20 +181,3 @@ def test_game_progression_prompt_valid_response(monkeypatch, test_input, expecte
     monkeypatch.setattr("builtins.input", lambda _: test_input)
     response = input("Are you ready to continue? [yes/no] ").lower()
     assert response in expected
-
-
-@pytest.mark.parametrize("test_input, expected", [
-    ("yeah", message.decision),
-    ("ok", message.decision),
-    ("sure", message.decision),
-    ("no", ["no", "n"]),
-    ("n", ["no", "n"])
-])
-def test_game_progression_prompt_invalid_response(monkeypatch, test_input, expected):
-    with pytest.raises((GamePlayException, NotReadyException)):
-        monkeypatch.setattr("builtins.input", lambda _: test_input)
-        response = input("Are you ready to continue? [yes/no] ").lower()
-        if response not in expected:
-            raise GamePlayException
-        if response in expected:
-            raise NotReadyException

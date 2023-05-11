@@ -9,6 +9,9 @@ class Deck:
         self._create_deck()
 
     def _create_deck(self):
+        """
+        Create deck of cards
+        """
         _cards = NUMBER_CARDS + [item.name for item in FaceCards]
         for suit in SUITS:
             _suits = [suit for _ in range(len(_cards))]

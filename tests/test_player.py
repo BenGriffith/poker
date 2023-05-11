@@ -1,6 +1,4 @@
 def test_player(player_two):
-    assert player_two.PLAYER == "Player"
-    assert player_two.COMPUTER == "Computer"
     assert player_two.name == "Tim"
     assert player_two.cash == 100
     assert len(player_two.pocket_cards) == 2
@@ -52,7 +50,7 @@ def test_computer_process_call(computer):
 def test_dealer_shuffle_deck(dealer):
     unshuffled_first_card = dealer.deck.cards[0]
     dealer.shuffle_deck()
-    shuffled_first_card= dealer.deck.cards[0]
+    shuffled_first_card = dealer.deck.cards[0]
     assert unshuffled_first_card != shuffled_first_card
 
 
