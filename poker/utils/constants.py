@@ -13,6 +13,7 @@ GAME_DELAY = 2
 PLAYER_TABLE_COLUMNS = "Order, Name, Chips, Blind, Pocket Cards, Best Hand, Short Name".split(",")
 FIRST_PLAYER = 1
 HIDDEN = "Hidden"
+TIE = 3
 
 class BetAction(Enum):
     CHECK = "check"
