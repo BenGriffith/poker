@@ -11,6 +11,11 @@ readme = "README.md"
 requires-python = ">=3.9"
 classifiers = ["License :: OSI Approved :: MIT License"]
 keywords = ["poker", "games", "cards", "texas holdem"]
+dependencies = [
+    "emoji",
+    "Faker",
+    "rich",
+]
 dynamic = ["version", "description"]
 
 [tool.flit.module]
