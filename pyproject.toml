@@ -1,0 +1,25 @@
+[build-system]
+requires = ["flit_core >=3.2,<4"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "play-poker"
+authors = [
+  {name = "Ben Griffith"}
+]
+readme = "README.md"
+requires-python = ">=3.9"
+classifiers = ["License :: OSI Approved :: MIT License"]
+keywords = ["poker", "games", "cards", "texas holdem"]
+dynamic = ["version", "description"]
+
+[tool.flit.module]
+name = "poker"
+
+[project.optional-dependencies]
+test = [
+  "pytest",
+]
+
+[project.urls]
+Source = "https://github.com/bengriffith/poker"

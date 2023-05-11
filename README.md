@@ -1,10 +1,10 @@
 ## General Info
 Command Line Single-player game of Texas Hold'Em poker. 
 
-At the beginning of the game, you are asked to define how much cash each player will receive along with how many players you would like to play against. You can select from 1 to 4 players. Your competition is then randomly created and a player order is defined for the duration of the game. This order is used to control blind and betting process.
+At the beginning of the game, you are asked to define how much cash each player will receive along with how many players you would like to play against. You can select from 1 to 4 players. Your competition is then randomly created and a player order is defined for the duration of the game. This order is used to control the blind and betting process.
 
 The game consists of the following stages:
-- Preflop: two pocket cards are dealt to each player and big/small blinds are process
+- Preflop: two pocket cards are dealt to each player and big/small blinds are processed
 - Flop: discard top card from the stack and deal three community cards
 - Turn: discard top card from the stack and deal one community card
 - River: discard top card from the stack and deal last community card
