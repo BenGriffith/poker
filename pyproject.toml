@@ -13,7 +13,7 @@ classifiers = ["License :: OSI Approved :: MIT License"]
 keywords = ["poker", "games", "cards", "texas holdem"]
 dependencies = [
     "emoji",
-    "Faker",
+    "faker",
     "rich",
 ]
 dynamic = ["version", "description"]
